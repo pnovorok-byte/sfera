@@ -102,7 +102,7 @@
         }
         #fab:active { transform: scale(0.9); background: rgba(184, 115, 51, 0.25); }
 
-        /* --- БОКОВАЯ ШТОРКА: АТЛАС СОЗВЕЗДИЙ --- */
+        /* --- БОКОВАЯ ШТОРКА: АТЛАС СОЗВЕЗДИЙ И АРХИВАРИУС --- */
         #atlas-backdrop {
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
@@ -112,35 +112,39 @@
 
         #atlas-drawer {
             position: fixed; top: 0; left: 0; bottom: 0;
-            width: 86%; max-width: 350px; z-index: 25;
-            background: rgba(9, 12, 19, 0.94);
+            width: 88%; max-width: 370px; z-index: 25;
+            background: rgba(9, 12, 19, 0.95);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border-right: 1px solid rgba(184, 115, 51, 0.4);
             box-shadow: 12px 0 40px rgba(0, 0, 0, 0.85);
             transform: translateX(-102%);
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex; flex-direction: column;
-            padding: 18px 14px;
+            padding: 16px 12px;
         }
         #atlas-drawer.active { transform: translateX(0); }
 
         .atlas-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 12px; padding-bottom: 10px;
+            margin-bottom: 10px; padding-bottom: 8px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
-        .atlas-title { font-size: 17px; font-weight: 600; color: #66fcf1; letter-spacing: 0.5px; }
+        .atlas-title { font-size: 16px; font-weight: 600; color: #66fcf1; letter-spacing: 0.5px; }
 
-        .atlas-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+        .atlas-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; }
         .atlas-tab {
-            flex: 1; padding: 7px 6px; border-radius: 10px; font-size: 12px; font-weight: 600;
+            padding: 7px 4px; border-radius: 10px; font-size: 11px; font-weight: 600;
             text-align: center; cursor: pointer; transition: 0.2s;
             background: rgba(255, 255, 255, 0.04); color: #9aa5b1;
-            border: 1px solid transparent;
+            border: 1px solid transparent; white-space: nowrap;
         }
         .atlas-tab.active {
             background: rgba(184, 115, 51, 0.22); color: #f3a867;
             border-color: rgba(184, 115, 51, 0.55);
+        }
+        .atlas-tab[data-tab="ai"].active {
+            background: rgba(102, 252, 241, 0.16); color: #66fcf1;
+            border-color: rgba(102, 252, 241, 0.5);
         }
 
         #atlas-list {
@@ -196,10 +200,61 @@
         .atlas-mini-btn.add { color: #66fcf1; border-color: rgba(102, 252, 241, 0.35); background: rgba(102, 252, 241, 0.1); }
         .atlas-mini-btn:active { transform: scale(0.9); }
 
+        /* --- ПАНЕЛЬ АРХИВАРИУСА --- */
+        #atlas-ai-wrap {
+            flex: 1; display: none; flex-direction: column; min-height: 0;
+        }
+        .ai-chips {
+            display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 6px;
+            scrollbar-width: none; flex-shrink: 0;
+        }
+        .ai-chips::-webkit-scrollbar { display: none; }
+        .ai-chip {
+            padding: 5px 10px; border-radius: 14px; font-size: 11px; white-space: nowrap;
+            background: rgba(102, 252, 241, 0.08); border: 1px solid rgba(102, 252, 241, 0.3);
+            color: #66fcf1; cursor: pointer; transition: 0.15s;
+        }
+        .ai-chip:active { transform: scale(0.95); background: rgba(102, 252, 241, 0.22); }
+
+        #ai-messages {
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+            padding: 6px 4px; margin-bottom: 8px;
+        }
+        #ai-messages::-webkit-scrollbar { width: 4px; }
+        #ai-messages::-webkit-scrollbar-thumb { background: rgba(102, 252, 241, 0.25); border-radius: 2px; }
+
+        .ai-msg {
+            padding: 10px 12px; border-radius: 12px; font-size: 13.5px; line-height: 1.5;
+            white-space: pre-wrap; user-select: text; word-break: break-word;
+        }
+        .ai-msg.bot {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(102, 252, 241, 0.22);
+            color: #e0e6ed; align-self: flex-start; width: 96%;
+        }
+        .ai-msg.user {
+            background: rgba(184, 115, 51, 0.2);
+            border: 1px solid rgba(184, 115, 51, 0.45);
+            color: #fff; align-self: flex-end; max-width: 88%;
+        }
+        .ai-input-row {
+            display: flex; gap: 6px; align-items: center; flex-shrink: 0;
+            padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        #ai-input {
+            margin-bottom: 0; flex: 1; padding: 9px 11px; font-size: 13.5px; border-radius: 12px;
+        }
+        #btn-ai-send {
+            width: 38px; height: 38px; border-radius: 12px; border: 1px solid rgba(102, 252, 241, 0.5);
+            background: rgba(102, 252, 241, 0.15); color: #66fcf1; font-size: 16px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+        }
+        #btn-ai-send:active { transform: scale(0.92); }
+
         /* --- МОДАЛЬНЫЕ ОКНА И РЕЖИМ ФОКУС --- */
         .modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.92);
-            width: 92%; max-width: 420px; max-height: 86vh; overflow-y: auto;
+            width: 92%; max-width: 420px; max-height: 88vh; overflow-y: auto;
             padding: 20px; opacity: 0; visibility: hidden;
             transition: opacity 0.25s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s, height 0.25s, max-height 0.25s, border-radius 0.25s;
             z-index: 30; pointer-events: none;
@@ -207,7 +262,6 @@
         }
         .modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
 
-        /* Полноэкранный режим «Фокус» */
         .modal.focus-mode {
             width: 100vw !important; max-width: 100vw !important;
             height: 100dvh !important; max-height: 100dvh !important;
@@ -246,9 +300,22 @@
             color: #fff; padding: 11px 12px; border-radius: 10px; margin-bottom: 10px; font-size: 15px; outline: none; user-select: text;
         }
         input:focus, textarea:focus, select:focus { border-color: #b87333; }
-        textarea { height: 105px; resize: none; line-height: 1.45; }
+        textarea { height: 100px; resize: none; line-height: 1.45; }
 
-        .color-row { display: flex; justify-content: space-between; margin: 4px 0 14px; padding: 0 4px; flex-shrink: 0; }
+        .color-header-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin: 2px 0 8px; flex-shrink: 0;
+        }
+        .color-label { font-size: 12px; color: #9aa5b1; }
+        #btn-auto-spec {
+            padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
+            background: linear-gradient(90deg, rgba(153,102,204,0.22), rgba(102,252,241,0.2));
+            border: 1px solid rgba(102, 252, 241, 0.45); color: #66fcf1; cursor: pointer;
+            transition: 0.2s;
+        }
+        #btn-auto-spec:active { transform: scale(0.94); }
+
+        .color-row { display: flex; justify-content: space-between; margin: 2px 0 14px; padding: 0 4px; flex-shrink: 0; }
         .c-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; transition: 0.2s; cursor: pointer; }
         .c-dot.act { border-color: #fff; transform: scale(1.18); box-shadow: 0 0 12px currentColor; }
 
@@ -310,12 +377,16 @@
         #toast {
             position: fixed; bottom: 105px; left: 50%; transform: translateX(-50%);
             padding: 8px 16px; border-radius: 20px; font-size: 13px; color: #66fcf1;
-            opacity: 0; visibility: hidden; transition: 0.25s; z-index: 40; white-space: nowrap;
+            opacity: 0; visibility: hidden; transition: 0.25s; z-index: 50; white-space: nowrap;
+            max-width: 92vw; overflow: hidden; text-overflow: ellipsis;
         }
         #toast.show { opacity: 1; visibility: visible; bottom: 115px; }
 
         .mem-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin: 8px 0 14px; }
         #mem-bar-fill { height: 100%; background: linear-gradient(90deg, #66fcf1, #b87333); width: 5%; }
+        .ai-key-box {
+            margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);
+        }
     </style>
     <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
     <script type="importmap">
@@ -327,12 +398,12 @@
 
     <div id="hud">
         <div id="top-dock" class="glass">
-            <div class="icon-btn" id="btn-atlas" title="Атлас созвездий">☰</div>
+            <div class="icon-btn" id="btn-atlas" title="Атлас и Архивариус">☰</div>
             <div class="icon-btn" id="btn-center" title="В центр">⌖</div>
             <div id="status-pill">Сфера: <span id="nc">0</span></div>
             <div class="icon-btn" id="btn-search" title="Поиск">🔍</div>
             <div class="icon-btn" id="btn-random" title="Случайная мысль">🎲</div>
-            <div class="icon-btn" id="btn-backup" title="Слепок базы">💾</div>
+            <div class="icon-btn" id="btn-backup" title="Хранилище и ИИ">💾</div>
         </div>
 
         <div id="spectrum-dock" class="glass">
@@ -360,7 +431,7 @@
         <div id="toast" class="glass">Скопировано</div>
     </div>
 
-    <!-- Боковая шторка: Атлас Сферы -->
+    <!-- Боковая шторка: Атлас Сферы + Архивариус -->
     <div id="atlas-backdrop"></div>
     <div id="atlas-drawer">
         <div class="atlas-header">
@@ -370,9 +441,26 @@
         <div class="atlas-tabs">
             <div class="atlas-tab active" data-tab="tree">Дерево</div>
             <div class="atlas-tab" data-tab="spectra">Спектры</div>
-            <div class="atlas-tab" data-tab="photos">С фото 📷</div>
+            <div class="atlas-tab" data-tab="photos">Фото 📷</div>
+            <div class="atlas-tab" data-tab="ai">✦ ИИ</div>
         </div>
         <div id="atlas-list"></div>
+
+        <!-- Вкладка Архивариуса -->
+        <div id="atlas-ai-wrap">
+            <div class="ai-chips">
+                <div class="ai-chip" data-q="Проанализируй все мои заметки и найди неочевидные скрытые параллели между разными созвездиями.">🔗 Скрытые параллели</div>
+                <div class="ai-chip" data-q="Какие главные темы и сквозные мотивы сейчас прослеживаются в моей Сфере?">🧭 Обзор тем</div>
+                <div class="ai-chip" data-q="Какие мысли в моей Сфере сейчас выглядят одинокими и с какими ядрами их стоит связать?">🏝 Одинокие звёзды</div>
+            </div>
+            <div id="ai-messages">
+                <div class="ai-msg bot">Привет! Я Архивариус Сферы. Я вижу все твои созвездия, заметки, стихи и связи между ними. О чём поразмышляем или что найдём?</div>
+            </div>
+            <div class="ai-input-row">
+                <input type="text" id="ai-input" placeholder="Спроси по заметкам или стихам...">
+                <button id="btn-ai-send" type="button">➤</button>
+            </div>
+        </div>
     </div>
 
     <!-- Окно Редактора -->
@@ -387,13 +475,18 @@
         <div id="parent-info" class="parent-badge">✦ Независимое созвездие</div>
 
         <input type="text" id="m-title" placeholder="Концепт (напр. Эмерджентность)">
-        <textarea id="m-text" placeholder="Суть размышления..."></textarea>
+        <textarea id="m-text" placeholder="Суть размышления или стих..."></textarea>
 
         <select id="m-size">
             <option value="7">Искорка (Быстрая заметка)</option>
             <option value="13" selected>Звезда (Стандартный узел)</option>
             <option value="24">Сверхгигант (Фундаментальный хаб)</option>
         </select>
+
+        <div class="color-header-row">
+            <span class="color-label">Спектр туманности:</span>
+            <button type="button" id="btn-auto-spec">✨ Авто-спектр</button>
+        </div>
 
         <div class="color-row" id="colors">
             <div class="c-dot act" style="background:#b87333; color:#b87333;" data-c="rgba(184,115,51,1)"></div>
@@ -448,22 +541,30 @@
         </div>
     </div>
 
-    <!-- Окно Бэкапа -->
+    <!-- Окно Бэкапа и ИИ-ключа -->
     <div id="backup-modal" class="modal glass">
         <div class="modal-header">
-            <h3 style="color:#66fcf1;">Хранилище Сферы</h3>
+            <h3 style="color:#66fcf1;">Хранилище и ИИ</h3>
             <div class="modal-close" id="btn-close-backup">✕</div>
         </div>
         <p style="font-size:13px; color:#aaa;">Занято памяти: <span id="mem-text" style="color:#fff;">0 КБ</span></p>
         <div class="mem-bar-bg"><div id="mem-bar-fill"></div></div>
-        <p style="font-size:12px; color:#888; margin-bottom:14px; line-height:1.4;">Сохраняй слепок вселенной в файл, чтобы не потерять мысли при очистке кэша браузера.</p>
         <div class="btn-row">
-            <button class="btn cyan" id="btn-export">Скачать (.json)</button>
+            <button class="btn cyan" id="btn-export">Скачать слепок (.json)</button>
         </div>
         <div class="file-wrap" style="margin-top:8px; margin-bottom:0;">
             <div class="btn" style="text-align:center;">Загрузить из файла</div>
             <input type="file" id="import-file" accept=".json,application/json">
         </div>
+
+        <div class="ai-key-box">
+            <p style="font-size:13px; color:#f3a867; font-weight:600; margin-bottom:6px;">✦ Нейросеть (Google AI Studio)</p>
+            <input type="password" id="ai-key-input" placeholder="Вставь API-ключ Gemini..." style="margin-bottom:8px; font-size:13px;">
+            <div class="btn-row" style="margin-top:0;">
+                <button class="btn primary" id="btn-save-key">Сохранить ключ</button>
+            </div>
+        </div>
+
         <div class="btn-row" style="margin-top:16px;">
             <button class="btn danger" id="btn-wipe-all">Очистить весь космос (Сброс)</button>
         </div>
@@ -477,7 +578,7 @@
         const showToast = (msg) => {
             const t = document.getElementById('toast');
             t.innerText = msg; t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2200);
+            setTimeout(() => t.classList.remove('show'), 2600);
         };
 
         const SPECTRUM_NAMES = {
@@ -493,7 +594,7 @@
         let data;
         if (rawStorage === null) {
             data = {
-                nodes: [{ id: 1, t: 'Сфера Разума', txt: 'Первое созвездие. Нажми «+ Спутник», чтобы развить ветку, «🔗 Связь» для моста между мирами или открой «☰ Атлас» слева вверху для обзора всей иерархии.', c: 'rgba(184,115,51,1)', s: 24, imgs: [], collapsed: false, date: Date.now(), px: 0, py: 0, pz: 0 }],
+                nodes: [{ id: 1, t: 'Сфера Разума', txt: 'Первое созвездие. Нажми «+ Спутник», чтобы развить ветку, «🔗 Связь» для моста между мирами или открой «☰ Атлас» слева вверху для обзора всей иерархии и диалога с Архивариусом.', c: 'rgba(184,115,51,1)', s: 24, imgs: [], collapsed: false, date: Date.now(), px: 0, py: 0, pz: 0 }],
                 links: []
             };
         } else {
@@ -520,6 +621,50 @@
             } catch (e) {
                 showToast('Память переполнена! Удали часть фото или скачай слепок');
             }
+        }
+
+        // --- МОДУЛЬ ИИ (GEMINI API) ---
+        function getAiKey() {
+            return (localStorage.getItem('sfAiKey') || '').trim();
+        }
+
+        async function callGemini(promptText, systemInstruction = '') {
+            const key = getAiKey();
+            if (!key) {
+                showToast('Сначала сохрани API-ключ в разделе 💾');
+                document.getElementById('btn-backup').click();
+                return null;
+            }
+
+            const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+            let lastErr = '';
+
+            for (const model of models) {
+                try {
+                    const body = {
+                        contents: [{ role: 'user', parts: [{ text: promptText }] }]
+                    };
+                    if (systemInstruction) {
+                        body.systemInstruction = { parts: [{ text: systemInstruction }] };
+                    }
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    const json = await res.json();
+                    if (res.ok && json.candidates && json.candidates[0]?.content?.parts?.[0]?.text) {
+                        return json.candidates[0].content.parts[0].text.trim();
+                    }
+                    lastErr = json.error?.message || `HTTP ${res.status}`;
+                    if (res.status === 400 || res.status === 403) break; // Ошибка самого ключа
+                } catch (err) {
+                    lastErr = err.message;
+                }
+            }
+            showToast('Ошибка ИИ: проверь ключ или соединение');
+            console.warn('Gemini error:', lastErr);
+            return null;
         }
 
         function compressImg(file, cb) {
@@ -575,7 +720,6 @@
             return { hiddenIds, collapsedCounts };
         }
 
-        // Разворачивает родительские узлы, если выбранный из Атласа узел был скрыт внутри свёрнутой ветки
         function ensureNodeVisible(targetId) {
             let changed = false;
             data.nodes.forEach(n => {
@@ -804,7 +948,7 @@
             document.getElementById('empty-hint').classList.toggle('visible', data.nodes.length === 0);
             applyVisualFilters();
             wakePhysics();
-            if (atlasDrawer.classList.contains('active')) renderAtlas();
+            if (atlasDrawer.classList.contains('active') && currentAtlasTab !== 'ai') renderAtlas();
         }
 
         function buildTraceSet(startId) {
@@ -926,7 +1070,7 @@
             });
         }
 
-        // --- МОДАЛКИ, ФОКУС И УПРАВЛЕНИЕ КАРТОЧКАМИ ---
+        // --- МОДАЛКИ, ФОКУС И АВТО-СПЕКТР ---
         let curId = null;
         let parentIdForNew = null;
         let linkingFromId = null;
@@ -941,6 +1085,7 @@
         const linkBanner = document.getElementById('link-banner');
         const btnVFocus = document.getElementById('btn-v-focus');
         const btnEFocus = document.getElementById('btn-e-focus');
+        const btnAutoSpec = document.getElementById('btn-auto-spec');
 
         function setModalFocus(modal, btn, state) {
             modal.classList.toggle('focus-mode', state);
@@ -955,6 +1100,50 @@
         btnEFocus.onclick = () => {
             haptic(12);
             setModalFocus(editModal, btnEFocus, !editModal.classList.contains('focus-mode'));
+        };
+
+        // Кнопка ИИ Авто-спектра
+        btnAutoSpec.onclick = async () => {
+            const title = document.getElementById('m-title').value.trim();
+            const text = document.getElementById('m-text').value.trim();
+            if (!title && !text) {
+                showToast('Сначала напиши заголовок или суть мысли');
+                return;
+            }
+            haptic(14);
+            const origLabel = btnAutoSpec.innerText;
+            btnAutoSpec.innerText = '⏳ Думаю...';
+
+            const sysPrompt = `Ты — классификатор мыслей «Сферы Разума». Выбери РОВНО ОДИН цвет спектра для заметки пользователя из 6 вариантов:
+1) rgba(184,115,51,1) — Медный: фундаментальные базы, структура, планы, архитектура, проверенные опоры.
+2) rgba(102,252,241,1) — Кибер-бирюза: свежие идеи, гипотезы, инсайты, технологии, креатив.
+3) rgba(153,102,204,1) — Аметист: глубокая философия, психология, поэзия, стихи, кино, смыслы, рефлексия.
+4) rgba(80,200,120,1) — Изумруд: личное развитие, гармония, состояния, быт, практики, семья.
+5) rgba(224,17,95,1) — Рубин: острые вопросы, импульсы, противоречия, парадоксы, сильные эмоции.
+6) rgba(240,248,255,1) — Белый эфир: чистые цитаты, аксиомы, определения, вопросы в пустоту.
+
+Ответь СТРОГО в одну строку в формате:
+ЦВЕТ | Короткое пояснение (3-5 слов)
+Пример:
+rgba(153,102,204,1) | Аметист: философская лирика и смыслы`;
+
+            const reply = await callGemini(`Заголовок: ${title}\nТекст: ${text}`, sysPrompt);
+            btnAutoSpec.innerText = origLabel;
+            if (!reply) return;
+
+            const colors = Object.keys(SPECTRUM_NAMES);
+            const matchedColor = colors.find(c => reply.includes(c));
+            if (matchedColor) {
+                curC = matchedColor;
+                document.querySelectorAll('.c-dot').forEach(d => {
+                    d.classList.toggle('act', d.getAttribute('data-c') === curC);
+                });
+                const reason = reply.split('|')[1]?.trim() || SPECTRUM_NAMES[matchedColor];
+                haptic(20);
+                showToast(`✨ ${reason}`);
+            } else {
+                showToast('Не удалось однозначно определить спектр');
+            }
         };
 
         function renderEditGallery() {
@@ -1203,12 +1392,13 @@
             haptic(18); const randObj = objs[Math.floor(Math.random() * objs.length)]; openViewModal(randObj.n.id);
         };
 
-        // --- БОКОВАЯ ШТОРКА: АТЛАС СОЗВЕЗДИЙ ---
+        // --- БОКОВАЯ ШТОРКА: АТЛАС СОЗВЕЗДИЙ + АРХИВАРИУС ---
         const atlasDrawer = document.getElementById('atlas-drawer');
         const atlasBackdrop = document.getElementById('atlas-backdrop');
         const atlasList = document.getElementById('atlas-list');
+        const atlasAiWrap = document.getElementById('atlas-ai-wrap');
         let currentAtlasTab = 'tree';
-        const collapsedInAtlas = new Set(); // Узлы, чьи ветки свёрнуты в самом списке Атласа
+        const collapsedInAtlas = new Set();
 
         function openAtlas() {
             haptic(14);
@@ -1315,14 +1505,21 @@
         }
 
         function renderAtlas() {
+            if (currentAtlasTab === 'ai') {
+                atlasList.style.display = 'none';
+                atlasAiWrap.style.display = 'flex';
+                return;
+            }
+            atlasAiWrap.style.display = 'none';
+            atlasList.style.display = 'flex';
             atlasList.innerHTML = '';
+
             if (data.nodes.length === 0) {
                 atlasList.innerHTML = `<div style="text-align:center; color:#778; font-size:13px; margin-top:40px;">Космос пока пуст.<br>Нажми «+», чтобы создать первую звезду.</div>`;
                 return;
             }
 
             if (currentAtlasTab === 'tree') {
-                // Определяем центральные узлы (ядра, у которых нет входящих не-мостовых связей)
                 const incomingTargets = new Set(data.links.filter(l => !l.bridge).map(l => l.target));
                 const roots = data.nodes.filter(n => !incomingTargets.has(n.id));
                 const visited = new Set();
@@ -1347,7 +1544,6 @@
                 }
 
                 roots.forEach(r => renderBranch(r, 0));
-                // На случай замкнутых колец добавляем оставшиеся узлы, чтобы ни один не потерялся
                 data.nodes.forEach(n => {
                     if (!visited.has(n.id)) renderBranch(n, 0);
                 });
@@ -1382,7 +1578,71 @@
             }
         }
 
-        // --- ПОИСК И БЭКАП ---
+        // --- ДИАЛОГ С АРХИВАРИУСОМ ---
+        const aiMessages = document.getElementById('ai-messages');
+        const aiInput = document.getElementById('ai-input');
+        const btnAiSend = document.getElementById('btn-ai-send');
+
+        function buildSphereSnapshot() {
+            if (!data.nodes.length) return 'Сфера пока пуста.';
+            const nodesTxt = data.nodes.map(n => {
+                const spec = SPECTRUM_NAMES[n.c] || n.c;
+                const connections = data.links
+                    .filter(l => l.source === n.id || l.target === n.id)
+                    .map(l => {
+                        const otherId = l.source === n.id ? l.target : l.source;
+                        const other = data.nodes.find(x => x.id === otherId);
+                        return other ? `${other.t}${l.bridge ? ' (мост)' : ''}` : '';
+                    }).filter(Boolean).join(', ');
+                return `• Узел «${n.t}» [${spec}]${connections ? ` | Связан с: ${connections}` : ''}\n  Текст: ${n.txt || '(без описания)'}`;
+            }).join('\n\n');
+            return nodesTxt;
+        }
+
+        function appendAiMsg(text, role = 'bot') {
+            const div = document.createElement('div');
+            div.className = `ai-msg ${role}`;
+            div.innerText = text;
+            aiMessages.appendChild(div);
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+            return div;
+        }
+
+        async function askArchivist(question) {
+            const q = question.trim();
+            if (!q) return;
+            haptic(12);
+            aiInput.value = '';
+            appendAiMsg(q, 'user');
+            const loadingDiv = appendAiMsg('⏳ Листаю страницы Сферы...', 'bot');
+
+            const snapshot = buildSphereSnapshot();
+            const sysInstruction = `Ты — Архивариус «Сферы Разума», чуткий хранитель графа мыслей, философских заметок и стихов пользователя.
+Общайся на «ты», живо, глубоко, лаконично и по делу, без официоза и дежурной лести.
+Вот полное актуальное содержимое всех узлов и связей пользователя в Сфере:
+---
+${snapshot}
+---
+Опирайся на эти записи при ответе. Упоминай названия узлов в кавычках «...», помогай находить переклички, разбирай стихи или концепты и подсказывай интересные связи.`;
+
+            const answer = await callGemini(q, sysInstruction);
+            if (answer) {
+                loadingDiv.innerText = answer;
+            } else {
+                loadingDiv.innerText = 'Не удалось связаться с нейросетью. Проверь API-ключ в разделе 💾.';
+            }
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+        }
+
+        btnAiSend.onclick = () => askArchivist(aiInput.value);
+        aiInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') askArchivist(aiInput.value);
+        });
+        document.querySelectorAll('.ai-chip').forEach(chip => {
+            chip.onclick = () => askArchivist(chip.getAttribute('data-q'));
+        });
+
+        // --- ПОИСК, КЛЮЧ И БЭКАП ---
         const searchPanel = document.getElementById('search-panel');
         const searchInput = document.getElementById('search-input');
         const searchRes = document.getElementById('search-results');
@@ -1416,9 +1676,17 @@
             const kb = Math.round((raw.length * 2) / 1024);
             document.getElementById('mem-text').innerText = `${kb} КБ из ~5000 КБ`;
             document.getElementById('mem-bar-fill').style.width = `${Math.min((kb / 5000) * 100, 100)}%`;
+            document.getElementById('ai-key-input').value = getAiKey();
             backupModal.classList.add('active');
         };
         document.getElementById('btn-close-backup').onclick = () => backupModal.classList.remove('active');
+
+        document.getElementById('btn-save-key').onclick = () => {
+            haptic(15);
+            const val = document.getElementById('ai-key-input').value.trim();
+            localStorage.setItem('sfAiKey', val);
+            showToast(val ? 'Ключ ИИ сохранён в памяти телефона ✦' : 'Ключ очищен');
+        };
 
         document.getElementById('btn-export').onclick = () => {
             haptic(15);
