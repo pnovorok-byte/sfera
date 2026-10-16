@@ -19,7 +19,7 @@
 
         #hud { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
         .glass {
-            background: rgba(11, 14, 22, 0.82);
+            background: rgba(11, 14, 22, 0.84);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(184, 115, 51, 0.35);
@@ -41,7 +41,7 @@
             background: rgba(184, 115, 51, 0.08);
         }
         .icon-btn:active, .icon-btn.active { background: rgba(184, 115, 51, 0.28); border-color: #b87333; transform: scale(0.92); }
-        #status-pill { padding: 0 8px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #66fcf1; font-weight: 600; }
+        #status-pill { padding: 0 6px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #66fcf1; font-weight: 600; }
 
         /* Спектральный фильтр */
         #spectrum-dock {
@@ -102,23 +102,143 @@
         }
         #fab:active { transform: scale(0.9); background: rgba(184, 115, 51, 0.25); }
 
-        /* Модальные окна */
+        /* --- БОКОВАЯ ШТОРКА: АТЛАС СОЗВЕЗДИЙ --- */
+        #atlas-backdrop {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 24; opacity: 0; visibility: hidden; transition: 0.28s;
+        }
+        #atlas-backdrop.active { opacity: 1; visibility: visible; }
+
+        #atlas-drawer {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 86%; max-width: 350px; z-index: 25;
+            background: rgba(9, 12, 19, 0.94);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(184, 115, 51, 0.4);
+            box-shadow: 12px 0 40px rgba(0, 0, 0, 0.85);
+            transform: translateX(-102%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column;
+            padding: 18px 14px;
+        }
+        #atlas-drawer.active { transform: translateX(0); }
+
+        .atlas-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 12px; padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .atlas-title { font-size: 17px; font-weight: 600; color: #66fcf1; letter-spacing: 0.5px; }
+
+        .atlas-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+        .atlas-tab {
+            flex: 1; padding: 7px 6px; border-radius: 10px; font-size: 12px; font-weight: 600;
+            text-align: center; cursor: pointer; transition: 0.2s;
+            background: rgba(255, 255, 255, 0.04); color: #9aa5b1;
+            border: 1px solid transparent;
+        }
+        .atlas-tab.active {
+            background: rgba(184, 115, 51, 0.22); color: #f3a867;
+            border-color: rgba(184, 115, 51, 0.55);
+        }
+
+        #atlas-list {
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;
+            padding-right: 2px;
+        }
+        #atlas-list::-webkit-scrollbar { width: 4px; }
+        #atlas-list::-webkit-scrollbar-thumb { background: rgba(184, 115, 51, 0.3); border-radius: 2px; }
+
+        .atlas-group-header {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
+            color: #b87333; margin: 10px 4px 4px; font-weight: 600;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .atlas-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 7px 8px; border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: 0.15s;
+        }
+        .atlas-row:active { background: rgba(102, 252, 241, 0.1); }
+        .atlas-row.root-node {
+            background: rgba(184, 115, 51, 0.07);
+            border-color: rgba(184, 115, 51, 0.22);
+        }
+        .atlas-left {
+            display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; cursor: pointer;
+        }
+        .atlas-toggle {
+            width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+            color: #66fcf1; font-size: 12px; flex-shrink: 0; border-radius: 6px;
+            background: rgba(102, 252, 241, 0.08);
+        }
+        .atlas-toggle.empty { visibility: hidden; width: 10px; }
+        .atlas-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px currentColor; }
+        .atlas-name {
+            font-size: 13.5px; color: #e0e6ed; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        .root-node .atlas-name { font-weight: 600; color: #fff; }
+        .atlas-badges { font-size: 11px; color: #66fcf1; flex-shrink: 0; margin-left: 4px; opacity: 0.85; }
+
+        .atlas-actions { display: flex; gap: 5px; margin-left: 6px; flex-shrink: 0; }
+        .atlas-mini-btn {
+            width: 28px; height: 28px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; cursor: pointer; transition: 0.15s;
+            background: rgba(255, 255, 255, 0.06); color: #d8dee9;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .atlas-mini-btn.edit { color: #f3a867; border-color: rgba(184, 115, 51, 0.4); background: rgba(184, 115, 51, 0.12); }
+        .atlas-mini-btn.add { color: #66fcf1; border-color: rgba(102, 252, 241, 0.35); background: rgba(102, 252, 241, 0.1); }
+        .atlas-mini-btn:active { transform: scale(0.9); }
+
+        /* --- МОДАЛЬНЫЕ ОКНА И РЕЖИМ ФОКУС --- */
         .modal {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.92);
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.92);
             width: 92%; max-width: 420px; max-height: 86vh; overflow-y: auto;
-            padding: 20px; opacity: 0; visibility: hidden; transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 20; pointer-events: none;
+            padding: 20px; opacity: 0; visibility: hidden;
+            transition: opacity 0.25s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s, height 0.25s, max-height 0.25s, border-radius 0.25s;
+            z-index: 30; pointer-events: none;
+            display: flex; flex-direction: column;
         }
         .modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
 
-        .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 10px; }
+        /* Полноэкранный режим «Фокус» */
+        .modal.focus-mode {
+            width: 100vw !important; max-width: 100vw !important;
+            height: 100dvh !important; max-height: 100dvh !important;
+            border-radius: 0 !important; border: none !important;
+            background: rgba(7, 10, 15, 0.97) !important;
+            padding: 22px 18px !important;
+        }
+        .modal.focus-mode #v-text {
+            flex: 1; max-height: none; font-size: 17px; line-height: 1.75;
+            padding: 8px 2px; margin-bottom: 16px;
+        }
+        .modal.focus-mode #m-text {
+            flex: 1; height: auto; min-height: 45vh; font-size: 16.5px; line-height: 1.65;
+        }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 10px; flex-shrink: 0; }
+        .header-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .focus-btn {
+            height: 30px; padding: 0 10px; border-radius: 15px;
+            background: rgba(102, 252, 241, 0.1); border: 1px solid rgba(102, 252, 241, 0.35);
+            color: #66fcf1; font-size: 11px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 4px; transition: 0.2s;
+        }
+        .focus-btn.active { background: rgba(184, 115, 51, 0.25); border-color: #b87333; color: #f3a867; }
         .modal-close {
             width: 30px; height: 30px; border-radius: 15px; background: rgba(255,255,255,0.06);
             display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 16px; cursor: pointer; flex-shrink: 0;
         }
         .parent-badge {
             display: inline-block; font-size: 11px; color: #66fcf1; background: rgba(102, 252, 241, 0.08);
-            border: 1px solid rgba(102, 252, 241, 0.3); padding: 4px 10px; border-radius: 12px; margin-bottom: 12px;
+            border: 1px solid rgba(102, 252, 241, 0.3); padding: 4px 10px; border-radius: 12px; margin-bottom: 12px; align-self: flex-start;
         }
 
         input, textarea, select {
@@ -126,14 +246,14 @@
             color: #fff; padding: 11px 12px; border-radius: 10px; margin-bottom: 10px; font-size: 15px; outline: none; user-select: text;
         }
         input:focus, textarea:focus, select:focus { border-color: #b87333; }
-        textarea { height: 95px; resize: none; line-height: 1.45; }
+        textarea { height: 105px; resize: none; line-height: 1.45; }
 
-        .color-row { display: flex; justify-content: space-between; margin: 4px 0 14px; padding: 0 4px; }
+        .color-row { display: flex; justify-content: space-between; margin: 4px 0 14px; padding: 0 4px; flex-shrink: 0; }
         .c-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; transition: 0.2s; cursor: pointer; }
         .c-dot.act { border-color: #fff; transform: scale(1.18); box-shadow: 0 0 12px currentColor; }
 
         /* Загрузка фото */
-        .file-wrap { position: relative; margin-bottom: 10px; }
+        .file-wrap { position: relative; margin-bottom: 10px; flex-shrink: 0; }
         .file-wrap input[type="file"] {
             position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 5; margin: 0;
         }
@@ -144,7 +264,7 @@
 
         #edit-gallery {
             display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 10px; margin-bottom: 10px;
-            scrollbar-width: none;
+            scrollbar-width: none; flex-shrink: 0;
         }
         #edit-gallery::-webkit-scrollbar { display: none; }
         .thumb-box {
@@ -158,7 +278,7 @@
             display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 6;
         }
 
-        #carousel-wrap { position: relative; margin-bottom: 14px; display: none; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.4); }
+        #carousel-wrap { position: relative; margin-bottom: 14px; display: none; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.4); flex-shrink: 0; }
         #v-carousel {
             display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
             scrollbar-width: none; -webkit-overflow-scrolling: touch;
@@ -172,10 +292,10 @@
         }
 
         #v-title { font-size: 21px; color: #66fcf1; font-weight: 600; line-height: 1.25; }
-        #v-text { font-size: 15px; line-height: 1.55; color: #d8dee9; margin-bottom: 14px; white-space: pre-wrap; user-select: text; max-height: 210px; overflow-y: auto; }
-        #v-meta { font-size: 11px; color: rgba(255,255,255,0.4); display: flex; justify-content: space-between; margin-bottom: 12px; }
+        #v-text { font-size: 15px; line-height: 1.55; color: #d8dee9; margin-bottom: 14px; white-space: pre-wrap; user-select: text; max-height: 220px; overflow-y: auto; }
+        #v-meta { font-size: 11px; color: rgba(255,255,255,0.4); display: flex; justify-content: space-between; margin-bottom: 12px; flex-shrink: 0; }
 
-        .btn-row { display: flex; gap: 6px; margin-top: 7px; }
+        .btn-row { display: flex; gap: 6px; margin-top: 7px; flex-shrink: 0; }
         .btn {
             flex: 1; padding: 10px 6px; border: 1px solid rgba(184, 115, 51, 0.6); color: #b87333;
             background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer;
@@ -188,9 +308,9 @@
         .btn.danger { border-color: rgba(255, 51, 102, 0.5); color: #ff3366; }
 
         #toast {
-            position: absolute; bottom: 105px; left: 50%; transform: translateX(-50%);
+            position: fixed; bottom: 105px; left: 50%; transform: translateX(-50%);
             padding: 8px 16px; border-radius: 20px; font-size: 13px; color: #66fcf1;
-            opacity: 0; visibility: hidden; transition: 0.25s; z-index: 30; white-space: nowrap;
+            opacity: 0; visibility: hidden; transition: 0.25s; z-index: 40; white-space: nowrap;
         }
         #toast.show { opacity: 1; visibility: visible; bottom: 115px; }
 
@@ -207,6 +327,7 @@
 
     <div id="hud">
         <div id="top-dock" class="glass">
+            <div class="icon-btn" id="btn-atlas" title="Атлас созвездий">☰</div>
             <div class="icon-btn" id="btn-center" title="В центр">⌖</div>
             <div id="status-pill">Сфера: <span id="nc">0</span></div>
             <div class="icon-btn" id="btn-search" title="Поиск">🔍</div>
@@ -239,10 +360,29 @@
         <div id="toast" class="glass">Скопировано</div>
     </div>
 
+    <!-- Боковая шторка: Атлас Сферы -->
+    <div id="atlas-backdrop"></div>
+    <div id="atlas-drawer">
+        <div class="atlas-header">
+            <div class="atlas-title">✦ Атлас Сферы</div>
+            <div class="modal-close" id="btn-close-atlas">✕</div>
+        </div>
+        <div class="atlas-tabs">
+            <div class="atlas-tab active" data-tab="tree">Дерево</div>
+            <div class="atlas-tab" data-tab="spectra">Спектры</div>
+            <div class="atlas-tab" data-tab="photos">С фото 📷</div>
+        </div>
+        <div id="atlas-list"></div>
+    </div>
+
+    <!-- Окно Редактора -->
     <div id="edit-modal" class="modal glass">
         <div class="modal-header">
             <h3 style="color:#b87333; font-weight:600;" id="e-title">Зажечь звезду</h3>
-            <div class="modal-close" id="btn-cancel">✕</div>
+            <div class="header-controls">
+                <button class="focus-btn" id="btn-e-focus" type="button">⛶ Фокус</button>
+                <div class="modal-close" id="btn-cancel">✕</div>
+            </div>
         </div>
         <div id="parent-info" class="parent-badge">✦ Независимое созвездие</div>
 
@@ -275,10 +415,14 @@
         </div>
     </div>
 
+    <!-- Окно Просмотра -->
     <div id="view-modal" class="modal glass">
         <div class="modal-header">
             <div id="v-title">Заголовок</div>
-            <div class="modal-close" id="btn-close">✕</div>
+            <div class="header-controls">
+                <button class="focus-btn" id="btn-v-focus" type="button">⛶ Фокус</button>
+                <div class="modal-close" id="btn-close">✕</div>
+            </div>
         </div>
 
         <div id="carousel-wrap">
@@ -304,6 +448,7 @@
         </div>
     </div>
 
+    <!-- Окно Бэкапа -->
     <div id="backup-modal" class="modal glass">
         <div class="modal-header">
             <h3 style="color:#66fcf1;">Хранилище Сферы</h3>
@@ -335,11 +480,20 @@
             setTimeout(() => t.classList.remove('show'), 2200);
         };
 
+        const SPECTRUM_NAMES = {
+            'rgba(184,115,51,1)': 'Медный спектр (Ядра и база)',
+            'rgba(102,252,241,1)': 'Кибер-бирюза (Идеи и синапсы)',
+            'rgba(153,102,204,1)': 'Аметист (Философия и смыслы)',
+            'rgba(80,200,120,1)': 'Изумруд (Развитие и гармония)',
+            'rgba(224,17,95,1)': 'Рубин (Импульсы и важное)',
+            'rgba(240,248,255,1)': 'Белый сверхгигант (Чистый эфир)'
+        };
+
         const rawStorage = localStorage.getItem('sfData_v2');
         let data;
         if (rawStorage === null) {
             data = {
-                nodes: [{ id: 1, t: 'Сфера Разума', txt: 'Первое созвездие. Нажми «+ Спутник», чтобы развить ветку, «🔗 Связь» для моста между мирами или «+» на главном экране для нового созвездия.', c: 'rgba(184,115,51,1)', s: 24, imgs: [], collapsed: false, date: Date.now(), px: 0, py: 0, pz: 0 }],
+                nodes: [{ id: 1, t: 'Сфера Разума', txt: 'Первое созвездие. Нажми «+ Спутник», чтобы развить ветку, «🔗 Связь» для моста между мирами или открой «☰ Атлас» слева вверху для обзора всей иерархии.', c: 'rgba(184,115,51,1)', s: 24, imgs: [], collapsed: false, date: Date.now(), px: 0, py: 0, pz: 0 }],
                 links: []
             };
         } else {
@@ -419,6 +573,24 @@
                 }
             });
             return { hiddenIds, collapsedCounts };
+        }
+
+        // Разворачивает родительские узлы, если выбранный из Атласа узел был скрыт внутри свёрнутой ветки
+        function ensureNodeVisible(targetId) {
+            let changed = false;
+            data.nodes.forEach(n => {
+                if (n.collapsed) {
+                    const desc = getDescendants(n.id, new Set());
+                    if (desc.includes(targetId)) {
+                        n.collapsed = false;
+                        changed = true;
+                    }
+                }
+            });
+            if (changed) {
+                save();
+                renderGraph();
+            }
         }
 
         const scene = new THREE.Scene();
@@ -632,6 +804,7 @@
             document.getElementById('empty-hint').classList.toggle('visible', data.nodes.length === 0);
             applyVisualFilters();
             wakePhysics();
+            if (atlasDrawer.classList.contains('active')) renderAtlas();
         }
 
         function buildTraceSet(startId) {
@@ -753,6 +926,7 @@
             });
         }
 
+        // --- МОДАЛКИ, ФОКУС И УПРАВЛЕНИЕ КАРТОЧКАМИ ---
         let curId = null;
         let parentIdForNew = null;
         let linkingFromId = null;
@@ -765,6 +939,23 @@
         const fileInput = document.getElementById('m-file');
         const uploadBtnText = document.getElementById('upload-btn-text');
         const linkBanner = document.getElementById('link-banner');
+        const btnVFocus = document.getElementById('btn-v-focus');
+        const btnEFocus = document.getElementById('btn-e-focus');
+
+        function setModalFocus(modal, btn, state) {
+            modal.classList.toggle('focus-mode', state);
+            btn.classList.toggle('active', state);
+            btn.innerText = state ? '↙ Обычный' : '⛶ Фокус';
+        }
+
+        btnVFocus.onclick = () => {
+            haptic(12);
+            setModalFocus(viewModal, btnVFocus, !viewModal.classList.contains('focus-mode'));
+        };
+        btnEFocus.onclick = () => {
+            haptic(12);
+            setModalFocus(editModal, btnEFocus, !editModal.classList.contains('focus-mode'));
+        };
 
         function renderEditGallery() {
             const box = document.getElementById('edit-gallery');
@@ -798,7 +989,17 @@
             curC = e.target.getAttribute('data-c');
         });
 
-        function closeViewModal() { viewModal.classList.remove('active'); tracedSet = null; applyVisualFilters(); }
+        function closeViewModal() {
+            viewModal.classList.remove('active');
+            setModalFocus(viewModal, btnVFocus, false);
+            tracedSet = null;
+            applyVisualFilters();
+        }
+
+        function closeEditModal() {
+            editModal.classList.remove('active');
+            setModalFocus(editModal, btnEFocus, false);
+        }
 
         function openCreateModal(parentId = null) {
             haptic(15);
@@ -810,15 +1011,38 @@
                 badge.innerText = `🔗 Спутник звезды: ${parentNode.t}`;
                 badge.style.color = '#66fcf1';
                 document.getElementById('m-size').value = '13';
+                curC = parentNode.c;
             } else {
                 document.getElementById('e-title').innerText = 'Новое созвездие';
                 badge.innerText = '✦ Независимое созвездие';
                 badge.style.color = '#f3a867';
                 document.getElementById('m-size').value = '24';
             }
+            document.querySelectorAll('.c-dot').forEach(d => {
+                d.classList.toggle('act', d.getAttribute('data-c') === curC);
+            });
             document.getElementById('m-title').value = '';
             document.getElementById('m-text').value = '';
             tempImgs = []; renderEditGallery();
+            editModal.classList.add('active');
+        }
+
+        function openEditModalById(id) {
+            const n = data.nodes.find(x => x.id === id);
+            if (!n) return;
+            haptic(12);
+            closeViewModal();
+            curId = id;
+            document.getElementById('e-title').innerText = 'Изменить мысль';
+            document.getElementById('parent-info').innerText = `✎ Редактирование узла`;
+            document.getElementById('parent-info').style.color = '#66fcf1';
+            document.getElementById('m-title').value = n.t;
+            document.getElementById('m-text').value = n.txt || '';
+            document.getElementById('m-size').value = n.s;
+            curC = n.c;
+            document.querySelectorAll('.c-dot').forEach(d => { d.classList.toggle('act', d.getAttribute('data-c') === n.c); });
+            tempImgs = [...(n.imgs || [])];
+            renderEditGallery();
             editModal.classList.add('active');
         }
 
@@ -862,6 +1086,7 @@
                 const parent = parentIdForNew ? data.nodes.find(n => n.id === parentIdForNew) : null;
                 let px = 0, py = 0, pz = 0;
                 if (parent) {
+                    parent.collapsed = false;
                     const angle = Math.random() * Math.PI * 2;
                     const spread = 30;
                     px = parent.px + Math.cos(angle) * spread;
@@ -877,12 +1102,15 @@
                 const newNode = { id, t, txt, s: sz, c: curC, imgs: [...tempImgs], collapsed: false, date: id, px, py, pz };
                 data.nodes.push(newNode);
                 if (parent) data.links.push({ source: parent.id, target: id });
-                setTimeout(() => flyTo(new THREE.Vector3(px, py, pz), 95), 80);
+                if (!atlasDrawer.classList.contains('active')) {
+                    setTimeout(() => flyTo(new THREE.Vector3(px, py, pz), 95), 80);
+                }
             }
-            save(); renderGraph(); editModal.classList.remove('active');
+            save(); renderGraph(); closeEditModal();
         };
 
         function openViewModal(id) {
+            ensureNodeVisible(id);
             const n = data.nodes.find(x => x.id === id);
             if (!n) return;
             haptic(12); curId = id;
@@ -928,20 +1156,7 @@
             viewModal.classList.add('active');
         }
 
-        document.getElementById('btn-edit').onclick = () => {
-            haptic(12); closeViewModal();
-            const n = data.nodes.find(x => x.id === curId);
-            if (!n) return;
-            document.getElementById('e-title').innerText = 'Изменить мысль';
-            document.getElementById('parent-info').innerText = `✎ Редактирование узла`;
-            document.getElementById('m-title').value = n.t;
-            document.getElementById('m-text').value = n.txt;
-            document.getElementById('m-size').value = n.s;
-            curC = n.c;
-            document.querySelectorAll('.c-dot').forEach(d => { d.classList.toggle('act', d.getAttribute('data-c') === n.c); });
-            tempImgs = [...(n.imgs || [])];
-            renderEditGallery(); editModal.classList.add('active');
-        };
+        document.getElementById('btn-edit').onclick = () => openEditModalById(curId);
 
         document.getElementById('btn-copy').onclick = () => {
             const n = data.nodes.find(x => x.id === curId);
@@ -980,7 +1195,7 @@
             if (data.nodes.length === 0) showToast('Космос полностью очищен');
         };
 
-        document.getElementById('btn-cancel').onclick = () => editModal.classList.remove('active');
+        document.getElementById('btn-cancel').onclick = () => closeEditModal();
         document.getElementById('btn-close').onclick = () => closeViewModal();
         document.getElementById('btn-center').onclick = () => { haptic(12); closeViewModal(); flyTo(new THREE.Vector3(0, 0, 0), 195); };
         document.getElementById('btn-random').onclick = () => {
@@ -988,13 +1203,193 @@
             haptic(18); const randObj = objs[Math.floor(Math.random() * objs.length)]; openViewModal(randObj.n.id);
         };
 
+        // --- БОКОВАЯ ШТОРКА: АТЛАС СОЗВЕЗДИЙ ---
+        const atlasDrawer = document.getElementById('atlas-drawer');
+        const atlasBackdrop = document.getElementById('atlas-backdrop');
+        const atlasList = document.getElementById('atlas-list');
+        let currentAtlasTab = 'tree';
+        const collapsedInAtlas = new Set(); // Узлы, чьи ветки свёрнуты в самом списке Атласа
+
+        function openAtlas() {
+            haptic(14);
+            renderAtlas();
+            atlasDrawer.classList.add('active');
+            atlasBackdrop.classList.add('active');
+        }
+
+        function closeAtlas() {
+            atlasDrawer.classList.remove('active');
+            atlasBackdrop.classList.remove('active');
+        }
+
+        document.getElementById('btn-atlas').onclick = openAtlas;
+        document.getElementById('btn-close-atlas').onclick = closeAtlas;
+        atlasBackdrop.onclick = closeAtlas;
+
+        document.querySelectorAll('.atlas-tab').forEach(tab => {
+            tab.onclick = () => {
+                haptic(10);
+                document.querySelectorAll('.atlas-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentAtlasTab = tab.getAttribute('data-tab');
+                renderAtlas();
+            };
+        });
+
+        function createAtlasRow(node, depth = 0, hasChildren = false, isRoot = false) {
+            const row = document.createElement('div');
+            row.className = 'atlas-row' + (isRoot ? ' root-node' : '');
+            row.style.marginLeft = `${Math.min(depth * 14, 70)}px`;
+
+            const left = document.createElement('div');
+            left.className = 'atlas-left';
+
+            if (currentAtlasTab === 'tree') {
+                const toggle = document.createElement('div');
+                toggle.className = 'atlas-toggle' + (hasChildren ? '' : ' empty');
+                toggle.innerText = collapsedInAtlas.has(node.id) ? '▸' : '▾';
+                if (hasChildren) {
+                    toggle.onclick = (e) => {
+                        e.stopPropagation();
+                        haptic(8);
+                        if (collapsedInAtlas.has(node.id)) collapsedInAtlas.delete(node.id);
+                        else collapsedInAtlas.add(node.id);
+                        renderAtlas();
+                    };
+                }
+                left.appendChild(toggle);
+            }
+
+            const dot = document.createElement('div');
+            dot.className = 'atlas-dot';
+            dot.style.background = node.c;
+            dot.style.color = node.c;
+            left.appendChild(dot);
+
+            const name = document.createElement('div');
+            name.className = 'atlas-name';
+            name.innerText = node.t;
+            left.appendChild(name);
+
+            const badges = document.createElement('div');
+            badges.className = 'atlas-badges';
+            let bTxt = '';
+            if (node.imgs && node.imgs.length > 0) bTxt += `📷${node.imgs.length > 1 ? node.imgs.length : ''} `;
+            if (node.collapsed) bTxt += '🌀';
+            badges.innerText = bTxt.trim();
+            left.appendChild(badges);
+
+            left.onclick = () => {
+                haptic(14);
+                closeAtlas();
+                openViewModal(node.id);
+            };
+
+            const actions = document.createElement('div');
+            actions.className = 'atlas-actions';
+
+            const btnAdd = document.createElement('div');
+            btnAdd.className = 'atlas-mini-btn add';
+            btnAdd.title = 'Добавить спутник';
+            btnAdd.innerText = '+';
+            btnAdd.onclick = (e) => {
+                e.stopPropagation();
+                openCreateModal(node.id);
+            };
+
+            const btnEdit = document.createElement('div');
+            btnEdit.className = 'atlas-mini-btn edit';
+            btnEdit.title = 'Редактировать мысль';
+            btnEdit.innerText = '✎';
+            btnEdit.onclick = (e) => {
+                e.stopPropagation();
+                openEditModalById(node.id);
+            };
+
+            actions.appendChild(btnAdd);
+            actions.appendChild(btnEdit);
+
+            row.appendChild(left);
+            row.appendChild(actions);
+            return row;
+        }
+
+        function renderAtlas() {
+            atlasList.innerHTML = '';
+            if (data.nodes.length === 0) {
+                atlasList.innerHTML = `<div style="text-align:center; color:#778; font-size:13px; margin-top:40px;">Космос пока пуст.<br>Нажми «+», чтобы создать первую звезду.</div>`;
+                return;
+            }
+
+            if (currentAtlasTab === 'tree') {
+                // Определяем центральные узлы (ядра, у которых нет входящих не-мостовых связей)
+                const incomingTargets = new Set(data.links.filter(l => !l.bridge).map(l => l.target));
+                const roots = data.nodes.filter(n => !incomingTargets.has(n.id));
+                const visited = new Set();
+
+                function renderBranch(node, depth) {
+                    if (visited.has(node.id)) return;
+                    visited.add(node.id);
+
+                    const childIds = data.links
+                        .filter(l => l.source === node.id && !l.bridge)
+                        .map(l => l.target);
+                    const children = childIds
+                        .map(cid => data.nodes.find(n => n.id === cid))
+                        .filter(Boolean);
+
+                    const row = createAtlasRow(node, depth, children.length > 0, depth === 0);
+                    atlasList.appendChild(row);
+
+                    if (children.length > 0 && !collapsedInAtlas.has(node.id)) {
+                        children.forEach(ch => renderBranch(ch, depth + 1));
+                    }
+                }
+
+                roots.forEach(r => renderBranch(r, 0));
+                // На случай замкнутых колец добавляем оставшиеся узлы, чтобы ни один не потерялся
+                data.nodes.forEach(n => {
+                    if (!visited.has(n.id)) renderBranch(n, 0);
+                });
+
+            } else if (currentAtlasTab === 'spectra') {
+                const groups = {};
+                data.nodes.forEach(n => {
+                    if (!groups[n.c]) groups[n.c] = [];
+                    groups[n.c].push(n);
+                });
+
+                Object.keys(groups).forEach(col => {
+                    const hdr = document.createElement('div');
+                    hdr.className = 'atlas-group-header';
+                    hdr.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${col};display:inline-block;"></span> ${SPECTRUM_NAMES[col] || 'Спектр'} (${groups[col].length})`;
+                    atlasList.appendChild(hdr);
+
+                    groups[col].forEach(node => {
+                        atlasList.appendChild(createAtlasRow(node, 0, false, node.s >= 24));
+                    });
+                });
+
+            } else if (currentAtlasTab === 'photos') {
+                const withPhotos = data.nodes.filter(n => n.imgs && n.imgs.length > 0);
+                if (withPhotos.length === 0) {
+                    atlasList.innerHTML = `<div style="text-align:center; color:#778; font-size:13px; margin-top:40px;">Нет узлов с прикреплёнными фото.<br>Нажми ✎ на любой мысли, чтобы добавить кадр.</div>`;
+                    return;
+                }
+                withPhotos.forEach(node => {
+                    atlasList.appendChild(createAtlasRow(node, 0, false, node.s >= 24));
+                });
+            }
+        }
+
+        // --- ПОИСК И БЭКАП ---
         const searchPanel = document.getElementById('search-panel');
         const searchInput = document.getElementById('search-input');
         const searchRes = document.getElementById('search-results');
 
         document.getElementById('btn-search').onclick = () => {
             haptic(10); searchPanel.classList.toggle('active'); document.getElementById('btn-search').classList.toggle('active');
-            if (searchPanel.classList.contains('active')) { searchInput.value = ''; updateSearch(''); searchInput.focus(); } 
+            if (searchPanel.classList.contains('active')) { searchInput.value = ''; updateSearch(''); searchInput.focus(); }
             else { applyVisualFilters(); }
         };
 
@@ -1056,6 +1451,7 @@
             save(); renderGraph(); backupModal.classList.remove('active'); showToast('Космос обнулён');
         };
 
+        // --- ТАПЫ ПО 3D-КОСМОСУ ---
         const rc = new THREE.Raycaster();
         let tS = { x: 0, y: 0 };
         window.addEventListener('touchstart', e => {
@@ -1063,7 +1459,7 @@
         }, { passive: true });
 
         window.addEventListener('touchend', e => {
-            if (e.target.closest('#hud') || e.target.closest('.modal')) return;
+            if (e.target.closest('#hud') || e.target.closest('.modal') || e.target.closest('#atlas-drawer') || e.target.closest('#atlas-backdrop')) return;
             if (!e.changedTouches.length) return;
             if (Math.hypot(e.changedTouches[0].clientX - tS.x, e.changedTouches[0].clientY - tS.y) > 14) return;
 
@@ -1076,7 +1472,7 @@
                 if (linkingFromId !== null) {
                     if (targetId === linkingFromId) { showToast('Выбери другую звезду'); return; }
                     const existingIdx = data.links.findIndex(l => (l.source === linkingFromId && l.target === targetId) || (l.source === targetId && l.target === linkingFromId));
-                    if (existingIdx !== -1) { data.links.splice(existingIdx, 1); haptic(25); showToast('Синапс разорван ✂️'); } 
+                    if (existingIdx !== -1) { data.links.splice(existingIdx, 1); haptic(25); showToast('Синапс разорван ✂️'); }
                     else { data.links.push({ source: linkingFromId, target: targetId, bridge: true }); haptic(25); showToast('Межсозвездный мост создан! ⚡'); }
                     linkingFromId = null; linkBanner.classList.remove('active'); save(); renderGraph(); return;
                 }
