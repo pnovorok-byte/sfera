@@ -1,6 +1,27 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
+<!-- Манифест автономного приложения PWA -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href='data:application/manifest+json,{
+      "name": "Сфера Разума",
+      "short_name": "Сфера",
+      "start_url": "./",
+      "display": "standalone",
+      "orientation": "portrait",
+      "background_color": "#070a0f",
+      "theme_color": "#070a0f",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2244%22 fill=%22%23070a0f%22 stroke=%22%23b87333%22 stroke-width=%224%22/><circle cx=%2250%22 cy=%2250%22 r=%2222%22 fill=%22%2366fcf1%22/></svg>",
+          "sizes": "192x192 512x512",
+          "type": "image/svg+xml",
+          "purpose": "any maskable"
+        }
+      ]
+    }'> 
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#070a0f">
