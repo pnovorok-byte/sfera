@@ -857,6 +857,115 @@ async function callGemini(promptText, systemInstruction = '') {
         const starsA = createStarLayer(1200, 3.4, 0.9);  // Крупные яркие звёзды
         const starsB = createStarLayer(1100, 2.6, 0.75); // Средние фоновые
         const starsC = createStarLayer(900, 4.2, 0.85);  // Редкие крупные маяки
+        
+// --- ЯРКИЕ МЕТЕОРЫ В ПОЛЕ ЗРЕНИЯ ---
+        const meteorGeo = new THREE.BufferGeometry();
+        const meteorPts = new Float32Array(6);
+        meteorGeo.setAttribute('position', new THREE.BufferAttribute(meteorPts, 3));
+        const meteorMat = new THREE.LineBasicMaterial({
+            color: 0x66fcf1,
+            transparent: true,
+            opacity: 0,
+            fog: false,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const meteorLine = new THREE.Line(meteorGeo, meteorMat);
+        scene.add(meteorLine);
+
+        const meteorHeadMat = new THREE.SpriteMaterial({
+            map: getGlowTex('rgba(102,252,241,1)'),
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            transparent: true,
+            opacity: 0
+        });
+        const meteorHeadSprite = new THREE.Sprite(meteorHeadMat);
+        meteorHeadSprite.scale.set(4, 4, 1);
+        scene.add(meteorHeadSprite);
+
+        const meteor = {
+            active: false,
+            head: new THREE.Vector3(),
+            tail: new THREE.Vector3(),
+            dir: new THREE.Vector3(),
+            speed: 5.5,
+            tailLen: 70,
+            progress: 0,
+            nextSpawnTime: Date.now() + 1500
+        };
+
+        function spawnMeteor() {
+            const camDir = new THREE.Vector3().subVectors(controls.target, camera.position).normalize();
+            const camRight = new THREE.Vector3().crossVectors(camDir, camera.up).normalize();
+            const camUp = new THREE.Vector3().crossVectors(camRight, camDir).normalize();
+
+            const distInFront = 280 + Math.random() * 80;
+            const viewCenter = camera.position.clone().addScaledVector(camDir, distInFront);
+
+            const side = Math.random() > 0.5 ? 1 : -1;
+            meteor.head.copy(viewCenter)
+                .addScaledVector(camRight, side * (70 + Math.random() * 30))
+                .addScaledVector(camUp, 60 + Math.random() * 25);
+
+            meteor.dir.copy(camRight).multiplyScalar(-side * 0.85)
+                .addScaledVector(camUp, -0.55)
+                .addScaledVector(camDir, (Math.random() - 0.5) * 0.2)
+                .normalize();
+
+            meteor.tail.copy(meteor.head);
+            meteor.progress = 0;
+            meteor.active = true;
+
+            const colors = [
+                { hex: 0x66fcf1, str: 'rgba(102,252,241,1)' },
+                { hex: 0xf3a867, str: 'rgba(243,168,103,1)' },
+                { hex: 0xffffff, str: 'rgba(255,255,255,1)' },
+                { hex: 0xc79bf2, str: 'rgba(199,155,242,1)' }
+            ];
+            const chosen = colors[Math.floor(Math.random() * colors.length)];
+            meteorMat.color.setHex(chosen.hex);
+            meteorHeadSprite.material.map = getGlowTex(chosen.str);
+        }
+
+        function updateMeteor() {
+            const now = Date.now();
+            if (!meteor.active) {
+                if (now > meteor.nextSpawnTime) spawnMeteor();
+                return;
+            }
+
+            meteor.progress += 0.012;
+            meteor.head.addScaledVector(meteor.dir, meteor.speed);
+            meteor.tail.copy(meteor.head).addScaledVector(meteor.dir, -meteor.tailLen);
+
+            const pos = meteorGeo.attributes.position.array;
+            pos[0] = meteor.head.x; pos[1] = meteor.head.y; pos[2] = meteor.head.z;
+            pos[3] = meteor.tail.x; pos[4] = meteor.tail.y; pos[5] = meteor.tail.z;
+            meteorGeo.attributes.position.needsUpdate = true;
+
+            meteorHeadSprite.position.copy(meteor.head);
+
+            let currentOp = 0;
+            if (meteor.progress < 0.2) {
+                currentOp = meteor.progress / 0.2;
+            } else if (meteor.progress > 0.6) {
+                currentOp = Math.max(0, 1 - (meteor.progress - 0.6) / 0.4);
+            } else {
+                currentOp = 1.0;
+            }
+
+            meteorMat.opacity = currentOp * 0.9;
+            meteorHeadMat.opacity = currentOp * 0.95;
+
+            if (meteor.progress >= 1.0) {
+                meteor.active = false;
+                meteorMat.opacity = 0;
+                meteorHeadMat.opacity = 0;
+                meteor.nextSpawnTime = now + (25000 + Math.random() * 5000);
+            }
+        }
+         
         let meshes = [], pickables = [], objs = [], links = [], labels = [], rings = [], pulses = [], nebulae = [];
         const nebGrp = new THREE.Group(); scene.add(nebGrp);
         const lGrp = new THREE.Group(); scene.add(lGrp);
@@ -1859,6 +1968,7 @@ ${snapshot}
             starsA.material.opacity = 0.55 + Math.sin(t * 1.8) * 0.4;
             starsB.material.opacity = 0.5 + Math.cos(t * 2.4 + 1.2) * 0.35;
             starsC.material.opacity = 0.6 + Math.sin(t * 1.1 + 3.0) * 0.35;
+            updateMeteor();
             renderer.render(scene, camera);
         }
         loop();
