@@ -2,391 +2,316 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#070a0f">
-    <title>Сфера Разума | 3D</title>
+    <title>Сфера Разума</title>
 
-    <!-- Манифест автономного приложения PWA -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: #070a0f; overflow: hidden; color: #e0e6ed; overscroll-behavior: none; user-select: none; }
+        :root {
+            --bg-canvas: #070a0f;
+            --glass-bg: rgba(18, 20, 26, 0.78);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border-focus: rgba(255, 255, 255, 0.22);
+            --text-primary: #ececf1;
+            --text-secondary: #9b9ba6;
+            --accent: #66fcf1;
+            --accent-dim: rgba(102, 252, 241, 0.12);
+            --danger: #ef4444;
+            --danger-dim: rgba(239, 68, 68, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg-canvas); overflow: hidden; color: var(--text-primary); overscroll-behavior: none; user-select: none; }
         #canvas-container { position: absolute; inset: 0; z-index: 1; }
 
         #hud { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+        
         .glass {
-            background: rgba(11, 14, 22, 0.84);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(184, 115, 51, 0.35);
-            border-radius: 16px;
-            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.75);
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
             pointer-events: auto;
         }
 
-        /* Верхний док */
+        /* Верхняя консоль */
         #top-dock {
-            position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
-            display: flex; align-items: center; gap: 6px; padding: 6px 10px;
+            position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+            display: flex; align-items: center; gap: 6px; padding: 6px 12px;
             border-radius: 24px; white-space: nowrap;
         }
         .icon-btn {
             width: 36px; height: 36px; border-radius: 18px; border: 1px solid transparent;
             display: flex; align-items: center; justify-content: center;
-            color: #b87333; font-size: 17px; cursor: pointer; transition: 0.2s;
-            background: rgba(184, 115, 51, 0.08);
+            color: var(--text-secondary); cursor: pointer; transition: 0.2s;
+            background: transparent;
         }
-        .icon-btn:active, .icon-btn.active { background: rgba(184, 115, 51, 0.28); border-color: #b87333; transform: scale(0.92); }
-        #status-pill { padding: 0 6px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #66fcf1; font-weight: 600; }
-
-        /* Спектральный фильтр */
-        #spectrum-dock {
-            position: absolute; top: 68px; left: 50%; transform: translateX(-50%);
-            display: flex; align-items: center; gap: 10px; padding: 6px 14px;
-            border-radius: 20px; border-color: rgba(255, 255, 255, 0.12);
+        .icon-btn svg {
+            width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round;
         }
-        .spec-dot {
-            width: 16px; height: 16px; border-radius: 50%; cursor: pointer;
-            transition: 0.25s; border: 2px solid transparent; opacity: 0.75;
+        .icon-btn:active, .icon-btn.active { 
+            background: rgba(255, 255, 255, 0.08); color: var(--text-primary); transform: scale(0.92); 
         }
-        .spec-dot.active {
-            transform: scale(1.35); opacity: 1; border-color: #fff;
-            box-shadow: 0 0 12px currentColor;
-        }
+        #status-pill { padding: 0 8px; font-size: 11.5px; font-weight: 500; letter-spacing: 0.5px; color: var(--text-primary); }
 
         /* Баннер связи */
         #link-banner {
-            position: absolute; top: 112px; left: 50%; transform: translateX(-50%) translateY(-10px);
-            padding: 8px 16px; border-radius: 20px; border: 1px solid #66fcf1;
-            color: #66fcf1; font-size: 13px; display: flex; align-items: center; gap: 10px;
+            position: absolute; top: 74px; left: 50%; transform: translateX(-50%) translateY(-10px);
+            padding: 8px 16px; border-radius: 20px; border: 1px solid var(--accent-dim);
+            background: rgba(102, 252, 241, 0.05);
+            color: var(--accent); font-size: 13px; display: flex; align-items: center; gap: 12px;
             opacity: 0; visibility: hidden; transition: 0.25s; white-space: nowrap;
-            box-shadow: 0 0 20px rgba(102, 252, 241, 0.25);
         }
         #link-banner.active { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
         #btn-cancel-link {
-            background: rgba(255, 51, 102, 0.25); color: #ff3366; border: 1px solid rgba(255,51,102,0.5);
-            padding: 3px 8px; border-radius: 10px; font-size: 11px; cursor: pointer; font-weight: 600;
+            background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 4px 10px; border-radius: 10px; font-size: 11.5px; cursor: pointer; font-weight: 500; transition: 0.15s;
         }
+        #btn-cancel-link:active { transform: scale(0.95); }
 
         #empty-hint {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            text-align: center; color: rgba(224, 230, 237, 0.45); font-size: 14px;
-            line-height: 1.6; pointer-events: none; transition: 0.3s; opacity: 0;
+            text-align: center; color: var(--text-secondary); font-size: 14px;
+            line-height: 1.6; pointer-events: none; transition: 0.3s; opacity: 0; font-weight: 400;
         }
         #empty-hint.visible { opacity: 1; }
 
         /* Поиск */
         #search-panel {
-            position: absolute; top: 110px; left: 50%; transform: translateX(-50%) translateY(-10px);
+            position: absolute; top: 72px; left: 50%; transform: translateX(-50%) translateY(-10px);
             width: 90%; max-width: 360px; padding: 12px; opacity: 0; visibility: hidden; transition: 0.25s;
         }
         #search-panel.active { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
-        #search-results { max-height: 160px; overflow-y: auto; margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+        #search-results { max-height: 200px; overflow-y: auto; margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
         .search-item {
-            padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,0.04);
-            font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;
+            padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);
+            font-size: 13.5px; display: flex; align-items: center; gap: 12px; cursor: pointer; border: 1px solid transparent;
         }
-        .search-item:active { background: rgba(102, 252, 241, 0.15); }
-        .s-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .search-item:active { background: rgba(255, 255, 255, 0.08); border-color: var(--glass-border); }
+        .s-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 8px currentColor; }
 
-        /* Кнопка + */
+        /* Кнопка создания (+) */
         #fab {
-            position: absolute; bottom: 28px; right: 24px; width: 62px; height: 62px;
-            border-radius: 31px; display: flex; align-items: center; justify-content: center;
-            font-size: 32px; color: #b87333; cursor: pointer; border: 1px solid rgba(184, 115, 51, 0.6);
-            box-shadow: 0 0 20px rgba(184, 115, 51, 0.25); transition: 0.2s;
+            position: absolute; bottom: 28px; right: 24px; width: 56px; height: 56px;
+            border-radius: 28px; display: flex; align-items: center; justify-content: center;
+            color: var(--text-primary); cursor: pointer; border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); transition: transform 0.2s, background 0.2s;
+            background: rgba(255, 255, 255, 0.05);
         }
-        #fab:active { transform: scale(0.9); background: rgba(184, 115, 51, 0.25); }
+        #fab svg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 1.8; fill: none; }
+        #fab:active { transform: scale(0.92); background: rgba(255, 255, 255, 0.12); }
 
-        /* --- БОКОВАЯ ШТОРКА: АТЛАС СОЗВЕЗДИЙ И АРХИВАРИУС --- */
+        /* ШТОРКА: НАВИГАТОР ПАПОК */
         #atlas-backdrop {
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-            z-index: 24; opacity: 0; visibility: hidden; transition: 0.28s;
+            z-index: 24; opacity: 0; visibility: hidden; transition: 0.25s;
         }
         #atlas-backdrop.active { opacity: 1; visibility: visible; }
 
         #atlas-drawer {
             position: fixed; top: 0; left: 0; bottom: 0;
-            width: 88%; max-width: 370px; z-index: 25;
-            background: rgba(9, 12, 19, 0.95);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(184, 115, 51, 0.4);
-            box-shadow: 12px 0 40px rgba(0, 0, 0, 0.85);
+            width: 86%; max-width: 360px; z-index: 25;
+            background: rgba(14, 16, 22, 0.96);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid var(--glass-border);
+            box-shadow: 12px 0 40px rgba(0, 0, 0, 0.7);
             transform: translateX(-102%);
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
             display: flex; flex-direction: column;
-            padding: 16px 12px;
+            padding: 20px 16px;
         }
         #atlas-drawer.active { transform: translateX(0); }
 
         .atlas-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 10px; padding-bottom: 8px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 18px; padding-bottom: 12px;
+            border-bottom: 1px solid var(--glass-border);
         }
-        .atlas-title { font-size: 16px; font-weight: 600; color: #66fcf1; letter-spacing: 0.5px; }
-
-        .atlas-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; }
-        .atlas-tab {
-            padding: 7px 4px; border-radius: 10px; font-size: 11px; font-weight: 600;
-            text-align: center; cursor: pointer; transition: 0.2s;
-            background: rgba(255, 255, 255, 0.04); color: #9aa5b1;
-            border: 1px solid transparent; white-space: nowrap;
-        }
-        .atlas-tab.active {
-            background: rgba(184, 115, 51, 0.22); color: #f3a867;
-            border-color: rgba(184, 115, 51, 0.55);
-        }
-        .atlas-tab[data-tab="ai"].active {
-            background: rgba(102, 252, 241, 0.16); color: #66fcf1;
-            border-color: rgba(102, 252, 241, 0.5);
-        }
+        .atlas-title-group { display: flex; flex-direction: column; gap: 3px; }
+        .atlas-title { font-size: 17px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.2px; }
+        .atlas-sub { font-size: 12px; color: var(--text-secondary); font-weight: 400; }
 
         #atlas-list {
-            flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
             padding-right: 2px;
         }
         #atlas-list::-webkit-scrollbar { width: 4px; }
-        #atlas-list::-webkit-scrollbar-thumb { background: rgba(184, 115, 51, 0.3); border-radius: 2px; }
+        #atlas-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
 
-        .atlas-group-header {
-            font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
-            color: #b87333; margin: 10px 4px 4px; font-weight: 600;
-            display: flex; align-items: center; gap: 6px;
+        /* Папки-аккордеоны */
+        .folder-wrapper {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: border-color 0.2s, background 0.2s;
         }
-        .atlas-row {
+        .folder-wrapper.expanded {
+            border-color: var(--glass-border-focus);
+            background: rgba(255, 255, 255, 0.035);
+        }
+        .folder-card {
+            padding: 12px 14px;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 7px 8px; border-radius: 10px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            cursor: pointer; transition: 0.15s;
+        }
+        .folder-card:active { background: rgba(255, 255, 255, 0.05); }
+        
+        .f-card-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+        .f-toggle-icon {
+            width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary); transition: transform 0.2s ease; flex-shrink: 0;
+        }
+        .f-toggle-icon svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; }
+        .folder-wrapper.expanded .f-toggle-icon { transform: rotate(90deg); color: var(--text-primary); }
+        .f-toggle-icon.empty { visibility: hidden; width: 6px; }
+
+        .f-card-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 10px currentColor; }
+        .f-card-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; margin-left: 2px; }
+        .f-card-title { font-size: 14px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .f-card-sub { font-size: 11px; color: var(--text-secondary); }
+
+        .f-card-actions { display: flex; align-items: center; gap: 4px; margin-left: 8px; flex-shrink: 0; }
+        .f-card-btn {
+            width: 32px; height: 32px; border-radius: 10px;
+            background: transparent; color: var(--text-secondary);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.15s;
+        }
+        .f-card-btn svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .f-card-btn:active { transform: scale(0.92); color: var(--text-primary); background: rgba(255, 255, 255, 0.08); }
+
+        .folder-children {
+            padding: 4px 10px 10px 30px;
+            display: flex; flex-direction: column; gap: 4px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .f-child-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 10px; border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            transition: 0.15s; cursor: pointer;
+        }
+        .f-child-item:active { background: rgba(255, 255, 255, 0.08); }
+        .f-child-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+        .f-child-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px currentColor; }
+        .f-child-title { font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ПОЛНОЭКРАННЫЙ РЕДАКТОР ЗАМЕТОК */
+        #edit-modal {
+            position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh;
+            background: #090c12;
+            z-index: 35; display: flex; flex-direction: column;
+            padding: 16px 18px env(safe-area-inset-bottom, 16px);
+            opacity: 0; visibility: hidden; pointer-events: none;
+            transform: translateY(16px);
+            transition: opacity 0.22s, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #edit-modal.active {
+            opacity: 1; visibility: visible; pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .edit-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 12px; margin-bottom: 8px;
+            border-bottom: 1px solid var(--glass-border);
+            flex-shrink: 0;
+        }
+        .edit-nav-center {
+            font-size: 12.5px; font-weight: 500; color: var(--text-secondary);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 55%;
+        }
+        .btn-nav-save {
+            padding: 7px 16px; border-radius: 18px; font-size: 13px; font-weight: 600;
+            background: var(--text-primary); color: #000; border: none; cursor: pointer;
             transition: 0.15s;
         }
-        .atlas-row:active { background: rgba(102, 252, 241, 0.1); }
-        .atlas-row.root-node {
-            background: rgba(184, 115, 51, 0.07);
-            border-color: rgba(184, 115, 51, 0.22);
-        }
-        .atlas-left {
-            display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; cursor: pointer;
-        }
-        .atlas-toggle {
-            width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
-            color: #66fcf1; font-size: 12px; flex-shrink: 0; border-radius: 6px;
-            background: rgba(102, 252, 241, 0.08);
-        }
-        .atlas-toggle.empty { visibility: hidden; width: 10px; }
-        .atlas-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px currentColor; }
-        .atlas-name {
-            font-size: 13.5px; color: #e0e6ed; white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis;
-        }
-        .root-node .atlas-name { font-weight: 600; color: #fff; }
-        .atlas-badges { font-size: 11px; color: #66fcf1; flex-shrink: 0; margin-left: 4px; opacity: 0.85; }
+        .btn-nav-save:active { transform: scale(0.95); background: #d0d0d5; }
 
-        .atlas-actions { display: flex; gap: 5px; margin-left: 6px; flex-shrink: 0; }
-        .atlas-mini-btn {
-            width: 28px; height: 28px; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 13px; cursor: pointer; transition: 0.15s;
-            background: rgba(255, 255, 255, 0.06); color: #d8dee9;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .clean-title-input {
+            width: 100%; background: transparent; border: none; outline: none;
+            color: var(--text-primary); font-size: 21px; font-weight: 600;
+            padding: 8px 0 12px; margin-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
         }
-        .atlas-mini-btn.edit { color: #f3a867; border-color: rgba(184, 115, 51, 0.4); background: rgba(184, 115, 51, 0.12); }
-        .atlas-mini-btn.add { color: #66fcf1; border-color: rgba(102, 252, 241, 0.35); background: rgba(102, 252, 241, 0.1); }
-        .atlas-mini-btn:active { transform: scale(0.9); }
+        .clean-title-input::placeholder { color: rgba(255, 255, 255, 0.24); }
 
-        /* --- ПАНЕЛЬ АРХИВАРИУСА --- */
-        #atlas-ai-wrap {
-            flex: 1; display: none; flex-direction: column; min-height: 0;
+        .editor-body {
+            flex: 1; display: flex; flex-direction: column; min-height: 0;
         }
-        .ai-chips {
-            display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 6px;
-            scrollbar-width: none; flex-shrink: 0;
+        .clean-textarea {
+            width: 100%; height: 100%; flex: 1; background: transparent; border: none; outline: none;
+            color: var(--text-primary); font-size: 16px; line-height: 1.6; resize: none;
+            user-select: text; overflow-y: auto; padding: 4px 0;
         }
-        .ai-chips::-webkit-scrollbar { display: none; }
-        .ai-chip {
-            padding: 5px 10px; border-radius: 14px; font-size: 11px; white-space: nowrap;
-            background: rgba(102, 252, 241, 0.08); border: 1px solid rgba(102, 252, 241, 0.3);
-            color: #66fcf1; cursor: pointer; transition: 0.15s;
-        }
-        .ai-chip:active { transform: scale(0.95); background: rgba(102, 252, 241, 0.22); }
+        .clean-textarea::placeholder { color: rgba(255, 255, 255, 0.22); }
 
-        #ai-messages {
-            flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
-            padding: 6px 4px; margin-bottom: 8px;
-        }
-        #ai-messages::-webkit-scrollbar { width: 4px; }
-        #ai-messages::-webkit-scrollbar-thumb { background: rgba(102, 252, 241, 0.25); border-radius: 2px; }
-
-        .ai-msg {
-            padding: 10px 12px; border-radius: 12px; font-size: 13.5px; line-height: 1.5;
-            white-space: pre-wrap; user-select: text; word-break: break-word;
-        }
-        .ai-msg.bot {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(102, 252, 241, 0.22);
-            color: #e0e6ed; align-self: flex-start; width: 96%;
-        }
-        .ai-msg.user {
-            background: rgba(184, 115, 51, 0.2);
-            border: 1px solid rgba(184, 115, 51, 0.45);
-            color: #fff; align-self: flex-end; max-width: 88%;
-        }
-        .ai-input-row {
-            display: flex; gap: 6px; align-items: center; flex-shrink: 0;
-            padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        #ai-input {
-            margin-bottom: 0; flex: 1; padding: 9px 11px; font-size: 13.5px; border-radius: 12px;
-        }
-        #btn-ai-send {
-            width: 38px; height: 38px; border-radius: 12px; border: 1px solid rgba(102, 252, 241, 0.5);
-            background: rgba(102, 252, 241, 0.15); color: #66fcf1; font-size: 16px;
-            display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
-        }
-        #btn-ai-send:active { transform: scale(0.92); }
-
-        /* --- МОДАЛЬНЫЕ ОКНА И РЕЖИМ ФОКУС --- */
+        /* Модальные окна (Просмотр и Память) */
         .modal {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.92);
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.96);
             width: 92%; max-width: 420px; max-height: 88vh; overflow-y: auto;
-            padding: 20px; opacity: 0; visibility: hidden;
-            transition: opacity 0.25s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s, height 0.25s, max-height 0.25s, border-radius 0.25s;
+            padding: 22px; opacity: 0; visibility: hidden;
+            transition: opacity 0.25s, transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: 30; pointer-events: none;
             display: flex; flex-direction: column;
         }
         .modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
 
-        .modal.focus-mode {
-            width: 100vw !important; max-width: 100vw !important;
-            height: 100dvh !important; max-height: 100dvh !important;
-            border-radius: 0 !important; border: none !important;
-            background: rgba(7, 10, 15, 0.97) !important;
-            padding: 22px 18px !important;
-        }
-        .modal.focus-mode #v-text {
-            flex: 1; max-height: none; font-size: 17px; line-height: 1.75;
-            padding: 8px 2px; margin-bottom: 16px;
-        }
-        .modal.focus-mode #m-text {
-            flex: 1; height: auto; min-height: 45vh; font-size: 16.5px; line-height: 1.65;
-        }
-
-        .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 10px; flex-shrink: 0; }
-        .header-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-        .focus-btn {
-            height: 30px; padding: 0 10px; border-radius: 15px;
-            background: rgba(102, 252, 241, 0.1); border: 1px solid rgba(102, 252, 241, 0.35);
-            color: #66fcf1; font-size: 11px; font-weight: 600; cursor: pointer;
-            display: flex; align-items: center; gap: 4px; transition: 0.2s;
-        }
-        .focus-btn.active { background: rgba(184, 115, 51, 0.25); border-color: #b87333; color: #f3a867; }
-        .modal-close {
-            width: 30px; height: 30px; border-radius: 15px; background: rgba(255,255,255,0.06);
-            display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 16px; cursor: pointer; flex-shrink: 0;
-        }
-        .parent-badge {
-            display: inline-block; font-size: 11px; color: #66fcf1; background: rgba(102, 252, 241, 0.08);
-            border: 1px solid rgba(102, 252, 241, 0.3); padding: 4px 10px; border-radius: 12px; margin-bottom: 12px; align-self: flex-start;
-        }
-
-        input, textarea, select {
-            width: 100%; background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(102, 252, 241, 0.2);
-            color: #fff; padding: 11px 12px; border-radius: 10px; margin-bottom: 10px; font-size: 15px; outline: none; user-select: text;
-        }
-        input:focus, textarea:focus, select:focus { border-color: #b87333; }
-        textarea { height: 100px; resize: none; line-height: 1.45; }
-
-        .color-header-row {
+        .modal-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin: 2px 0 8px; flex-shrink: 0;
+            margin-bottom: 14px; gap: 8px; flex-shrink: 0;
         }
-        .color-label { font-size: 12px; color: #9aa5b1; }
-        #btn-auto-spec {
-            padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
-            background: linear-gradient(90deg, rgba(153,102,204,0.22), rgba(102,252,241,0.2));
-            border: 1px solid rgba(102, 252, 241, 0.45); color: #66fcf1; cursor: pointer;
-            transition: 0.2s;
+        .modal-title { font-size: 17px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.2px; }
+        .modal-icon-btn {
+            width: 32px; height: 32px; border-radius: 16px; background: rgba(255, 255, 255, 0.05);
+            display: flex; align-items: center; justify-content: center; color: var(--text-secondary);
+            cursor: pointer; flex-shrink: 0; transition: 0.15s;
         }
-        #btn-auto-spec:active { transform: scale(0.94); }
+        .modal-icon-btn svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .modal-icon-btn:active { background: rgba(255, 255, 255, 0.1); transform: scale(0.92); color: var(--text-primary); }
 
-        .color-row { display: flex; justify-content: space-between; margin: 2px 0 14px; padding: 0 4px; flex-shrink: 0; }
-        .c-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; transition: 0.2s; cursor: pointer; }
-        .c-dot.act { border-color: #fff; transform: scale(1.18); box-shadow: 0 0 12px currentColor; }
+        #v-title { font-size: 21px; font-weight: 600; line-height: 1.3; margin-bottom: 12px; letter-spacing: -0.2px; }
+        #v-text { font-size: 15px; line-height: 1.6; color: var(--text-primary); margin-bottom: 16px; white-space: pre-wrap; user-select: text; max-height: 260px; overflow-y: auto; }
+        #v-meta { font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between; margin-bottom: 16px; flex-shrink: 0; border-top: 1px solid var(--glass-border); padding-top: 12px; }
 
-        /* Загрузка фото */
-        .file-wrap { position: relative; margin-bottom: 10px; flex-shrink: 0; }
-        .file-wrap input[type="file"] {
-            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 5; margin: 0;
-        }
-        .btn-up {
-            background: rgba(102, 252, 241, 0.08); border: 1px dashed rgba(102, 252, 241, 0.45);
-            padding: 12px; text-align: center; border-radius: 10px; color: #66fcf1; font-size: 13px; font-weight: 500;
-        }
-
-        #edit-gallery {
-            display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 10px; margin-bottom: 10px;
-            scrollbar-width: none; flex-shrink: 0;
-        }
-        #edit-gallery::-webkit-scrollbar { display: none; }
-        .thumb-box {
-            position: relative; width: 80px; height: 80px; flex-shrink: 0; border-radius: 10px;
-            overflow: hidden; border: 2px solid rgba(102, 252, 241, 0.4); box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
-        .thumb-del {
-            position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 11px;
-            background: rgba(224, 17, 95, 0.92); color: #fff; font-size: 12px; font-weight: bold;
-            display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 6;
-        }
-
-        #carousel-wrap { position: relative; margin-bottom: 14px; display: none; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.4); flex-shrink: 0; }
-        #v-carousel {
-            display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
-            scrollbar-width: none; -webkit-overflow-scrolling: touch;
-        }
-        #v-carousel::-webkit-scrollbar { display: none; }
-        .carousel-slide { flex: 0 0 100%; scroll-snap-align: center; display: flex; align-items: center; justify-content: center; max-height: 230px; }
-        .carousel-slide img { width: 100%; height: 230px; object-fit: cover; }
-        #carousel-badge {
-            position: absolute; bottom: 8px; right: 10px; background: rgba(7, 10, 15, 0.8);
-            color: #66fcf1; padding: 3px 9px; border-radius: 10px; font-size: 11px; border: 1px solid rgba(102,252,241,0.3);
-        }
-
-        #v-title { font-size: 21px; color: #66fcf1; font-weight: 600; line-height: 1.25; }
-        #v-text { font-size: 15px; line-height: 1.55; color: #d8dee9; margin-bottom: 14px; white-space: pre-wrap; user-select: text; max-height: 220px; overflow-y: auto; }
-        #v-meta { font-size: 11px; color: rgba(255,255,255,0.4); display: flex; justify-content: space-between; margin-bottom: 12px; flex-shrink: 0; }
-
-        .btn-row { display: flex; gap: 6px; margin-top: 7px; flex-shrink: 0; }
+        .btn-row { display: flex; gap: 8px; margin-top: 4px; flex-shrink: 0; }
         .btn {
-            flex: 1; padding: 10px 6px; border: 1px solid rgba(184, 115, 51, 0.6); color: #b87333;
-            background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer;
-            font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; text-align: center; transition: 0.15s;
+            flex: 1; padding: 11px 8px; border: 1px solid var(--glass-border); color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.03); border-radius: 12px; font-weight: 500; cursor: pointer;
+            font-size: 13.5px; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.15s;
         }
-        .btn:active { transform: scale(0.96); }
-        .btn.primary { background: rgba(184, 115, 51, 0.22); color: #f3a867; border-color: #b87333; }
-        .btn.cyan { border-color: rgba(102, 252, 241, 0.6); color: #66fcf1; background: rgba(102, 252, 241, 0.1); }
-        .btn.purple { border-color: rgba(153, 102, 204, 0.7); color: #c79bf2; background: rgba(153, 102, 204, 0.15); }
-        .btn.danger { border-color: rgba(255, 51, 102, 0.5); color: #ff3366; }
+        .btn svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .btn:active { transform: scale(0.96); background: rgba(255, 255, 255, 0.08); }
+        .btn.primary { background: var(--text-primary); color: #000; border-color: transparent; }
+        .btn.primary:active { background: #d0d0d5; }
+        .btn.danger { color: var(--danger); border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); }
+        .btn.danger:active { background: var(--danger-dim); }
+
+        .file-wrap { position: relative; flex-shrink: 0; }
+        .file-wrap input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 5; margin: 0; }
 
         #toast {
             position: fixed; bottom: 105px; left: 50%; transform: translateX(-50%);
-            padding: 8px 16px; border-radius: 20px; font-size: 13px; color: #66fcf1;
-            opacity: 0; visibility: hidden; transition: 0.25s; z-index: 50; white-space: nowrap;
-            max-width: 92vw; overflow: hidden; text-overflow: ellipsis;
+            padding: 9px 18px; border-radius: 20px; font-size: 13.5px; font-weight: 500;
+            background: var(--text-primary); color: #000;
+            opacity: 0; visibility: hidden; transition: 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 50; white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
         }
         #toast.show { opacity: 1; visibility: visible; bottom: 115px; }
 
-        .mem-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin: 8px 0 14px; }
-        #mem-bar-fill { height: 100%; background: linear-gradient(90deg, #66fcf1, #b87333); width: 5%; }
-        .ai-key-box {
-            margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);
-        }
+        .mem-bar-bg { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: 3px; overflow: hidden; margin: 10px 0 16px; }
+        #mem-bar-fill { height: 100%; background: var(--text-primary); width: 5%; border-radius: 3px; }
     </style>
     <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
     <script type="importmap">
@@ -398,21 +323,19 @@
 
     <div id="hud">
         <div id="top-dock" class="glass">
-            <div class="icon-btn" id="btn-atlas" title="Атлас и Архивариус">☰</div>
-            <div class="icon-btn" id="btn-center" title="В центр">⌖</div>
+            <div class="icon-btn" id="btn-atlas" title="Папки">
+                <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </div>
+            <div class="icon-btn" id="btn-center" title="В центр">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+            </div>
             <div id="status-pill">Сфера: <span id="nc">0</span></div>
-            <div class="icon-btn" id="btn-search" title="Поиск">🔍</div>
-            <div class="icon-btn" id="btn-random" title="Случайная мысль">🎲</div>
-            <div class="icon-btn" id="btn-backup" title="Хранилище и ИИ">💾</div>
-        </div>
-
-        <div id="spectrum-dock" class="glass">
-            <div class="spec-dot" style="background:#b87333; color:#b87333;" data-spec="rgba(184,115,51,1)"></div>
-            <div class="spec-dot" style="background:#66fcf1; color:#66fcf1;" data-spec="rgba(102,252,241,1)"></div>
-            <div class="spec-dot" style="background:#9966cc; color:#9966cc;" data-spec="rgba(153,102,204,1)"></div>
-            <div class="spec-dot" style="background:#50c878; color:#50c878;" data-spec="rgba(80,200,120,1)"></div>
-            <div class="spec-dot" style="background:#e0115f; color:#e0115f;" data-spec="rgba(224,17,95,1)"></div>
-            <div class="spec-dot" style="background:#f0f8ff; color:#f0f8ff;" data-spec="rgba(240,248,255,1)"></div>
+            <div class="icon-btn" id="btn-search" title="Поиск">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+            <div class="icon-btn" id="btn-backup" title="Память">
+                <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            </div>
         </div>
 
         <div id="link-banner" class="glass">
@@ -420,153 +343,121 @@
             <span id="btn-cancel-link">Отмена</span>
         </div>
 
-        <div id="empty-hint">Космос чист.<br>Нажми <b>+</b>, чтобы зажечь первое созвездие.</div>
+        <div id="empty-hint">Космос чист.<br>Дважды коснись экрана, чтобы зажечь звезду.</div>
 
         <div id="search-panel" class="glass">
-            <input type="text" id="search-input" placeholder="Найти мысль или слово..." style="margin-bottom:4px;">
+            <input type="text" id="search-input" placeholder="Найти заметку..." style="margin-bottom:4px; width:100%; background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); color:#fff; padding:10px 12px; border-radius:10px; font-size:14px; outline:none;">
             <div id="search-results"></div>
         </div>
 
-        <div id="fab" class="glass" title="Новое созвездие">+</div>
+        <div id="fab" class="glass" title="Новая заметка">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </div>
         <div id="toast" class="glass">Скопировано</div>
     </div>
 
-    <!-- Боковая шторка: Атлас Сферы + Архивариус -->
+    <!-- Боковая шторка: Навигатор папок -->
     <div id="atlas-backdrop"></div>
     <div id="atlas-drawer">
         <div class="atlas-header">
-            <div class="atlas-title">✦ Атлас Сферы</div>
-            <div class="modal-close" id="btn-close-atlas">✕</div>
-        </div>
-        <div class="atlas-tabs">
-            <div class="atlas-tab active" data-tab="tree">Дерево</div>
-            <div class="atlas-tab" data-tab="spectra">Спектры</div>
-            <div class="atlas-tab" data-tab="photos">Фото 📷</div>
-            <div class="atlas-tab" data-tab="ai">✦ ИИ</div>
+            <div class="atlas-title-group">
+                <div class="atlas-title">Папки</div>
+                <div class="atlas-sub" id="atlas-stats-count">0 папок • 0 заметок</div>
+            </div>
+            <div class="modal-icon-btn" id="btn-close-atlas">
+                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
         </div>
         <div id="atlas-list"></div>
+    </div>
 
-        <!-- Вкладка Архивариуса -->
-        <div id="atlas-ai-wrap">
-            <div class="ai-chips">
-                <div class="ai-chip" data-q="Проанализируй все мои заметки и найди неочевидные скрытые параллели между разными созвездиями.">🔗 Скрытые параллели</div>
-                <div class="ai-chip" data-q="Какие главные темы и сквозные мотивы сейчас прослеживаются в моей Сфере?">🧭 Обзор тем</div>
-                <div class="ai-chip" data-q="Какие мысли в моей Сфере сейчас выглядят одинокими и с какими ядрами их стоит связать?">🏝 Одинокие звёзды</div>
+    <!-- Полноэкранный редактор заметок -->
+    <div id="edit-modal">
+        <div class="edit-nav">
+            <div class="modal-icon-btn" id="btn-cancel" title="Закрыть">
+                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </div>
-            <div id="ai-messages">
-                <div class="ai-msg bot">Я здесь. Вижу все наши созвездия и мысли в Сфере. О чём поговорим или куда направим взгляд?</div>
-            </div>
-            <div class="ai-input-row">
-                <input type="text" id="ai-input" placeholder="Спроси по заметкам или стихам...">
-                <button id="btn-ai-send" type="button">➤</button>
-            </div>
+            <div class="edit-nav-center" id="edit-nav-parent">Новая заметка</div>
+            <button class="btn-nav-save" id="btn-save">Вплести</button>
+        </div>
+
+        <input type="text" id="m-title" class="clean-title-input" placeholder="Название...">
+
+        <div class="editor-body">
+            <textarea id="m-text" class="clean-textarea" placeholder="Твоя мысль..."></textarea>
         </div>
     </div>
 
-    <!-- Окно Редактора -->
-    <div id="edit-modal" class="modal glass">
-        <div class="modal-header">
-            <h3 style="color:#b87333; font-weight:600;" id="e-title">Зажечь звезду</h3>
-            <div class="header-controls">
-                <button class="focus-btn" id="btn-e-focus" type="button">⛶ Фокус</button>
-                <div class="modal-close" id="btn-cancel">✕</div>
-            </div>
-        </div>
-        <div id="parent-info" class="parent-badge">✦ Независимое созвездие</div>
-
-        <input type="text" id="m-title" placeholder="Концепт (напр. Эмерджентность)">
-        <textarea id="m-text" placeholder="Суть размышления или стих..."></textarea>
-
-        <select id="m-size">
-            <option value="7">Искорка (Быстрая заметка)</option>
-            <option value="13" selected>Звезда (Стандартный узел)</option>
-            <option value="24">Сверхгигант (Фундаментальный хаб)</option>
-        </select>
-
-        <div class="color-header-row">
-            <span class="color-label">Спектр туманности:</span>
-            <button type="button" id="btn-auto-spec">✨ Авто-спектр</button>
-        </div>
-
-        <div class="color-row" id="colors">
-            <div class="c-dot act" style="background:#b87333; color:#b87333;" data-c="rgba(184,115,51,1)"></div>
-            <div class="c-dot" style="background:#66fcf1; color:#66fcf1;" data-c="rgba(102,252,241,1)"></div>
-            <div class="c-dot" style="background:#9966cc; color:#9966cc;" data-c="rgba(153,102,204,1)"></div>
-            <div class="c-dot" style="background:#50c878; color:#50c878;" data-c="rgba(80,200,120,1)"></div>
-            <div class="c-dot" style="background:#e0115f; color:#e0115f;" data-c="rgba(224,17,95,1)"></div>
-            <div class="c-dot" style="background:#f0f8ff; color:#f0f8ff;" data-c="rgba(240,248,255,1)"></div>
-        </div>
-
-        <div class="file-wrap">
-            <div class="btn-up" id="upload-btn-text">+ Прикрепить фото из галереи</div>
-            <input type="file" id="m-file" accept="image/*">
-        </div>
-        <div id="edit-gallery"></div>
-
-        <div class="btn-row">
-            <button class="btn primary" id="btn-save">Вплести в Сферу</button>
-        </div>
-    </div>
-
-    <!-- Окно Просмотра -->
+    <!-- Окно Просмотра заметки -->
     <div id="view-modal" class="modal glass">
         <div class="modal-header">
-            <div id="v-title">Заголовок</div>
-            <div class="header-controls">
-                <button class="focus-btn" id="btn-v-focus" type="button">⛶ Фокус</button>
-                <div class="modal-close" id="btn-close">✕</div>
+            <div class="modal-title" style="font-size:15px; color:var(--text-secondary);">Заметка</div>
+            <div class="modal-icon-btn" id="btn-close">
+                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </div>
         </div>
 
-        <div id="carousel-wrap">
-            <div id="v-carousel"></div>
-            <div id="carousel-badge">1 / 1</div>
-        </div>
-
+        <div id="v-title">Заголовок</div>
         <div id="v-text"></div>
         <div id="v-meta">
-            <span id="v-links-count">Синапсов: 0</span>
+            <span id="v-links-count">Связей: 0</span>
             <span id="v-date"></span>
         </div>
 
         <div class="btn-row">
-            <button class="btn cyan" id="btn-branch">+ Спутник</button>
-            <button class="btn cyan" id="btn-bridge">🔗 Связь</button>
-            <button class="btn purple" id="btn-collapse" style="display:none;">🌀 Свернуть</button>
+            <button class="btn" id="btn-branch">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Спутник
+            </button>
+            <button class="btn" id="btn-bridge">
+                <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> Связь
+            </button>
+            <button class="btn" id="btn-collapse" style="display:none;">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Свернуть
+            </button>
         </div>
         <div class="btn-row">
-            <button class="btn" id="btn-copy">Копировать</button>
-            <button class="btn" id="btn-edit">Изменить</button>
-            <button class="btn danger" id="btn-del">Стереть</button>
+            <button class="btn" id="btn-copy">
+                <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+            <button class="btn" id="btn-edit">
+                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </button>
+            <button class="btn danger" id="btn-del">
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
         </div>
     </div>
 
-    <!-- Окно Бэкапа и ИИ-ключа -->
+    <!-- Окно резервного хранилища -->
     <div id="backup-modal" class="modal glass">
         <div class="modal-header">
-            <h3 style="color:#66fcf1;">Хранилище и ИИ</h3>
-            <div class="modal-close" id="btn-close-backup">✕</div>
+            <div class="modal-title">Память Сферы</div>
+            <div class="modal-icon-btn" id="btn-close-backup">
+                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
         </div>
-        <p style="font-size:13px; color:#aaa;">Занято памяти: <span id="mem-text" style="color:#fff;">0 КБ</span></p>
+        <p style="font-size:13px; color:var(--text-secondary);">Занято памяти устройства: <span id="mem-text" style="color:var(--text-primary); font-weight:500;">0 КБ</span></p>
         <div class="mem-bar-bg"><div id="mem-bar-fill"></div></div>
+        
         <div class="btn-row">
-            <button class="btn cyan" id="btn-export">Скачать слепок (.json)</button>
+            <button class="btn" id="btn-export">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Скачать слепок (.json)
+            </button>
         </div>
-        <div class="file-wrap" style="margin-top:8px; margin-bottom:0;">
-            <div class="btn" style="text-align:center;">Загрузить из файла</div>
+        <div class="file-wrap" style="margin-top:10px; margin-bottom:0;">
+            <div class="btn" style="width:100%; border: 1px solid var(--glass-border);">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Восстановить из файла
+            </div>
             <input type="file" id="import-file" accept=".json,application/json">
         </div>
 
-        <div class="ai-key-box">
-            <p style="font-size:13px; color:#f3a867; font-weight:600; margin-bottom:6px;">✦ Нейросеть (Google AI Studio)</p>
-            <input type="password" id="ai-key-input" placeholder="Вставь API-ключ Gemini..." style="margin-bottom:8px; font-size:13px;">
-            <div class="btn-row" style="margin-top:0;">
-                <button class="btn primary" id="btn-save-key">Сохранить ключ</button>
-            </div>
-        </div>
-
-        <div class="btn-row" style="margin-top:16px;">
-            <button class="btn danger" id="btn-wipe-all">Очистить весь космос (Сброс)</button>
+        <div class="btn-row" style="margin-top:20px;">
+            <button class="btn danger" id="btn-wipe-all">
+                <svg viewBox="0 0 24 24"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                Сброс космоса
+            </button>
         </div>
     </div>
 
@@ -582,19 +473,19 @@
         };
 
         const SPECTRUM_NAMES = {
-            'rgba(184,115,51,1)': 'Медный спектр (Ядра и база)',
-            'rgba(102,252,241,1)': 'Кибер-бирюза (Идеи и синапсы)',
-            'rgba(153,102,204,1)': 'Аметист (Философия и смыслы)',
-            'rgba(80,200,120,1)': 'Изумруд (Развитие и гармония)',
-            'rgba(224,17,95,1)': 'Рубин (Импульсы и важное)',
-            'rgba(240,248,255,1)': 'Белый сверхгигант (Чистый эфир)'
+            'rgba(184,115,51,1)': 'Медь (База)',
+            'rgba(102,252,241,1)': 'Кибер-бирюза (Идеи)',
+            'rgba(153,102,204,1)': 'Аметист (Смыслы)',
+            'rgba(80,200,120,1)': 'Изумруд (Гармония)',
+            'rgba(224,17,95,1)': 'Рубин (Импульсы)',
+            'rgba(240,248,255,1)': 'Белый эфир (Аксиомы)'
         };
 
         const rawStorage = localStorage.getItem('sfData_v2');
         let data;
         if (rawStorage === null) {
             data = {
-                nodes: [{ id: 1, t: 'Сфера Разума', txt: 'Первое созвездие. Нажми «+ Спутник», чтобы развить ветку, «🔗 Связь» для моста между мирами или открой «☰ Атлас» слева вверху для обзора всей иерархии и диалога с Архивариусом.', c: 'rgba(184,115,51,1)', s: 24, imgs: [], collapsed: false, date: Date.now(), px: 0, py: 0, pz: 0 }],
+                nodes: [{ id: 1, t: 'Сфера Разума', txt: 'Первая папка. Нажми «Спутник», чтобы развить мысль, коснись дважды экрана для быстрой записи или открой навигатор слева.', c: 'rgba(184,115,51,1)', s: 24, collapsed: false, date: Date.now(), px: 0, py: 0, pz: 0 }],
                 links: []
             };
         } else {
@@ -607,107 +498,78 @@
             if (isNaN(n.px) || !isFinite(n.px) || Math.abs(n.px) > 800) n.px = idx === 0 ? 0 : (Math.random() - 0.5) * 60;
             if (isNaN(n.py) || !isFinite(n.py) || Math.abs(n.py) > 800) n.py = idx === 0 ? 0 : (Math.random() - 0.5) * 60;
             if (isNaN(n.pz) || !isFinite(n.pz) || Math.abs(n.pz) > 800) n.pz = idx === 0 ? 0 : (Math.random() - 0.5) * 60;
-            if (!Array.isArray(n.imgs)) {
-                n.imgs = n.img ? [n.img] : [];
-                delete n.img;
-            }
+            delete n.imgs; delete n.img;
             if (typeof n.collapsed !== 'boolean') n.collapsed = false;
             if (!n.date) n.date = Date.now();
         });
 
         function save() {
+            try { localStorage.setItem('sfData_v2', JSON.stringify(data)); } 
+            catch (e) { showToast('Ошибка сохранения в локальную память'); }
+        }
+
+        /* === ФОНОВАЯ КАЛИБРОВКА (Спутники строго наследуют цвет) === */
+        async function refineNodeWithAI(nodeId, text, manualTitle, isSatellite = false) {
+            const apiKey = (localStorage.getItem('eva_key') || '').trim();
+            const apiUrl = (localStorage.getItem('eva_url') || 'https://api.proxyapi.ru/openai/v1').replace(/\/$/, '');
+            if (!apiKey || !text) return;
+
+            const promptText = `Проанализируй заметку мыслителя для 3D-графа «Сферы Разума».
+Текст: """${text}"""
+${manualTitle ? `Авторский заголовок: "${manualTitle}"` : ''}
+
+Определи:
+1. "title": Лаконичный, точный и глубокий заголовок (2-4 слова). Если авторский заголовок уже хороший — оставь его.
+2. "color": Выбери строго один цвет туманности:
+   - "rgba(184,115,51,1)" (Медь: планы, проекты, архитектура, проверенная база)
+   - "rgba(102,252,241,1)" (Кибер-бирюза: идеи, гипотезы, код, технологии)
+   - "rgba(153,102,204,1)" (Аметист: глубокая философия, буддизм, стихи, смыслы, психология)
+   - "rgba(80,200,120,1)" (Изумруд: личные практики, покой, гармония, быт)
+   - "rgba(224,17,95,1)" (Рубин: парадоксы, острое, спор, триггеры, сильные эмоции)
+   - "rgba(240,248,255,1)" (Белый эфир: чистые афоризмы, аксиомы, точные цитаты)
+3. "size": Размер звезды:
+   - 8 (Искорка: короткая цитата, мысль в одно предложение)
+   - 14 (Звезда: стандартная заметка, стих, размышление)
+   - 24 (Сверхгигант: фундаментальная концепция, манифест или крупный хаб темы)
+
+Ответь СТРОГО в формате JSON без разметки:
+{"title":"...", "color":"...", "size": 14}`;
+
             try {
-                localStorage.setItem('sfData_v2', JSON.stringify(data));
-            } catch (e) {
-                showToast('Память переполнена! Удали часть фото или скачай слепок');
-            }
-        }
+                const res = await fetch(`${apiUrl}/chat/completions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                    body: JSON.stringify({
+                        model: 'openai/gpt-4o-mini',
+                        messages: [{ role: 'user', content: promptText }],
+                        temperature: 0.3
+                    })
+                });
 
-        // --- МОДУЛЬ ИИ (GEMINI API) ---
-        function getAiKey() {
-            return (localStorage.getItem('sfAiKey') || '').trim();
-        }
-
-let currentGeminiModel = null;
-
-async function callGemini(promptText, systemInstruction = '') {
-            const key = getAiKey();
-            if (!key) {
-                showToast('Сначала сохрани API-ключ в разделе 💾');
-                document.getElementById('btn-backup').click();
-                return null;
-            }
-
-            // Актуальные рабочие модели Gemini
-            const models = ['gemini-3.8-flash', 'gemini-3.5-flash-lite'];
-            let lastErr = '';
-
-            for (const model of models) {
-                try {
-                    const body = {
-    contents: [{ role: 'user', parts: [{ text: promptText }] }],
-    generationConfig: {
-        temperature: 0.78, // Добавляет живости, образности и гибкости слога
-        topP: 0.95
-      }
-                    };
-                    if (systemInstruction) {
-                        body.systemInstruction = { parts: [{ text: systemInstruction }] };
-                    }
-
-                    const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
-                    const res = await fetch(targetUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'x-goog-api-key': key
-                        },
-                        body: JSON.stringify(body)
-                    });
-
+                if (res.ok) {
                     const json = await res.json();
-                    if (res.ok && json.candidates && json.candidates[0]?.content?.parts?.[0]?.text) {
-                        return json.candidates[0].content.parts[0].text.trim();
-                    }
-                    lastErr = json.error?.message || `HTTP ${res.status}`;
-                } catch (err) {
-                    lastErr = err.message;
-                }
-            }
-            showToast(`ИИ: ${lastErr || 'Ошибка соединения'}`);
-            return null;
-      }
+                    let reply = json.choices?.[0]?.message?.content || '';
+                    reply = reply.replace(/```json/gi, '').replace(/```/g, '').trim();
+                    const parsed = JSON.parse(reply);
 
-        function compressImg(file, cb) {
-            const r = new FileReader();
-            r.onload = e => {
-                const img = new Image();
-                img.onload = () => {
-                    const cvs = document.createElement('canvas');
-                    let w = img.width, h = img.height;
-                    const MAX = 600;
-                    if (w > MAX || h > MAX) {
-                        if (w > h) { h *= MAX / w; w = MAX; }
-                        else { w *= MAX / h; h = MAX; }
+                    const node = data.nodes.find(n => n.id === nodeId);
+                    if (node) {
+                        if (!manualTitle && parsed.title) node.t = parsed.title;
+                        if (parsed.size) node.s = parsed.size;
+                        if (!isSatellite && parsed.color && SPECTRUM_NAMES[parsed.color]) {
+                            node.c = parsed.color;
+                        }
+                        save();
+                        renderGraph();
+                        showToast(`Оформлено: «${node.t}»`);
                     }
-                    cvs.width = w; cvs.height = h;
-                    cvs.getContext('2d').drawImage(img, 0, 0, w, h);
-                    cb(cvs.toDataURL('image/jpeg', 0.68));
-                };
-                img.onerror = () => {
-                    showToast('Не удалось распознать формат картинки');
-                    cb(null);
-                };
-                img.src = e.target.result;
-            };
-            r.readAsDataURL(file);
+                }
+            } catch (_) {}
         }
 
         function getDescendants(rootId, visited = new Set()) {
             visited.add(rootId);
-            const children = data.links
-                .filter(l => l.source === rootId && !l.bridge)
-                .map(l => l.target);
+            const children = data.links.filter(l => l.source === rootId && !l.bridge).map(l => l.target);
             let result = [];
             children.forEach(cid => {
                 if (!visited.has(cid)) {
@@ -736,16 +598,10 @@ async function callGemini(promptText, systemInstruction = '') {
             data.nodes.forEach(n => {
                 if (n.collapsed) {
                     const desc = getDescendants(n.id, new Set());
-                    if (desc.includes(targetId)) {
-                        n.collapsed = false;
-                        changed = true;
-                    }
+                    if (desc.includes(targetId)) { n.collapsed = false; changed = true; }
                 }
             });
-            if (changed) {
-                save();
-                renderGraph();
-            }
+            if (changed) { save(); renderGraph(); }
         }
 
         const scene = new THREE.Scene();
@@ -802,29 +658,27 @@ async function callGemini(promptText, systemInstruction = '') {
 
         function getTextTex(txt, color) {
             const cvs = document.createElement('canvas'); const ctx = cvs.getContext('2d');
-            const font = '600 34px "Segoe UI", sans-serif';
+            const font = '500 32px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
             ctx.font = font;
             const cleanTxt = txt.length > 28 ? txt.slice(0, 27) + '…' : txt;
             const w = Math.max(Math.min(ctx.measureText(cleanTxt).width + 38, 560), 64);
-            cvs.width = w; cvs.height = 56;
+            cvs.width = w; cvs.height = 54;
             ctx.font = font; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.shadowColor = color; ctx.shadowBlur = 10;
-            ctx.fillStyle = '#f0f6fc';
-            ctx.fillText(cleanTxt, w / 2, 28);
+            ctx.shadowColor = color; ctx.shadowBlur = 12;
+            ctx.fillStyle = '#ececf1';
+            ctx.fillText(cleanTxt, w / 2, 27);
             return new THREE.CanvasTexture(cvs);
         }
 
-        // Мягкая круглая текстура для звёзд (без пиксельных квадратов)
-     // --- ЖИВОЕ ЗВЁЗДНОЕ НЕБО (Яркие круглые звёзды с мерцанием) ---
+        /* === ЗВЁЗДНЫЕ СЛОИ === */
         const starCanvas = document.createElement('canvas');
-        starCanvas.width = 32;
-        starCanvas.height = 32;
+        starCanvas.width = 32; starCanvas.height = 32;
         const starCtx = starCanvas.getContext('2d');
         const starGradient = starCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
-        starGradient.addColorStop(0, '#ffffff'); // Ослепительный центр
-        starGradient.addColorStop(0.2, 'rgba(255, 255, 255, 1)'); // Плотное белое ядро
-        starGradient.addColorStop(0.5, 'rgba(214, 235, 255, 0.75)'); // Мягкий космический ореол
-        starGradient.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Плавное растворение краев
+        starGradient.addColorStop(0, '#ffffff');
+        starGradient.addColorStop(0.2, 'rgba(255, 255, 255, 1)');
+        starGradient.addColorStop(0.5, 'rgba(214, 235, 255, 0.75)');
+        starGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
         starCtx.fillStyle = starGradient;
         starCtx.fillRect(0, 0, 32, 32);
         const starTexture = new THREE.CanvasTexture(starCanvas);
@@ -839,102 +693,49 @@ async function callGemini(promptText, systemInstruction = '') {
             const geo = new THREE.BufferGeometry();
             geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
             const mat = new THREE.PointsMaterial({
-                color: 0xffffff,
-                size: size,
-                map: starTexture,
-                transparent: true,
-                opacity: baseOpacity,
-                fog: false,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false
+                color: 0xffffff, size: size, map: starTexture, transparent: true, opacity: baseOpacity, fog: false, blending: THREE.AdditiveBlending, depthWrite: false
             });
             const field = new THREE.Points(geo, mat);
             scene.add(field);
             return field;
         }
 
-        // Три независимых слоя для мерцания вразнобой
-        const starsA = createStarLayer(1200, 3.4, 0.9);  // Крупные яркие звёзды
-        const starsB = createStarLayer(1100, 2.6, 0.75); // Средние фоновые
-        const starsC = createStarLayer(900, 4.2, 0.85);  // Редкие крупные маяки
-        
-// --- ЯРКИЕ МЕТЕОРЫ В ПОЛЕ ЗРЕНИЯ ---
+        const starsA = createStarLayer(1200, 3.4, 0.9);
+        const starsB = createStarLayer(1100, 2.6, 0.75);
+        const starsC = createStarLayer(900, 4.2, 0.85);
+
+        /* === МЕТЕОРЫ === */
         const meteorGeo = new THREE.BufferGeometry();
         const meteorPts = new Float32Array(6);
         meteorGeo.setAttribute('position', new THREE.BufferAttribute(meteorPts, 3));
-        const meteorMat = new THREE.LineBasicMaterial({
-            color: 0x66fcf1,
-            transparent: true,
-            opacity: 0,
-            fog: false,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
-        });
+        const meteorMat = new THREE.LineBasicMaterial({ color: 0x66fcf1, transparent: true, opacity: 0, fog: false, blending: THREE.AdditiveBlending, depthWrite: false });
         const meteorLine = new THREE.Line(meteorGeo, meteorMat);
         scene.add(meteorLine);
 
-        const meteorHeadMat = new THREE.SpriteMaterial({
-            map: getGlowTex('rgba(102,252,241,1)'),
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            transparent: true,
-            opacity: 0
-        });
+        const meteorHeadMat = new THREE.SpriteMaterial({ map: getGlowTex('rgba(102,252,241,1)'), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0 });
         const meteorHeadSprite = new THREE.Sprite(meteorHeadMat);
         meteorHeadSprite.scale.set(4, 4, 1);
         scene.add(meteorHeadSprite);
 
-        const meteor = {
-            active: false,
-            head: new THREE.Vector3(),
-            tail: new THREE.Vector3(),
-            dir: new THREE.Vector3(),
-            speed: 5.5,
-            tailLen: 70,
-            progress: 0,
-            nextSpawnTime: Date.now() + 1500
-        };
+        const meteor = { active: false, head: new THREE.Vector3(), tail: new THREE.Vector3(), dir: new THREE.Vector3(), speed: 5.5, tailLen: 70, progress: 0, nextSpawnTime: Date.now() + 1500 };
 
         function spawnMeteor() {
             const camDir = new THREE.Vector3().subVectors(controls.target, camera.position).normalize();
             const camRight = new THREE.Vector3().crossVectors(camDir, camera.up).normalize();
             const camUp = new THREE.Vector3().crossVectors(camRight, camDir).normalize();
-
             const distInFront = 280 + Math.random() * 80;
             const viewCenter = camera.position.clone().addScaledVector(camDir, distInFront);
-
             const side = Math.random() > 0.5 ? 1 : -1;
-            meteor.head.copy(viewCenter)
-                .addScaledVector(camRight, side * (70 + Math.random() * 30))
-                .addScaledVector(camUp, 60 + Math.random() * 25);
 
-            meteor.dir.copy(camRight).multiplyScalar(-side * 0.85)
-                .addScaledVector(camUp, -0.55)
-                .addScaledVector(camDir, (Math.random() - 0.5) * 0.2)
-                .normalize();
-
+            meteor.head.copy(viewCenter).addScaledVector(camRight, side * (70 + Math.random() * 30)).addScaledVector(camUp, 60 + Math.random() * 25);
+            meteor.dir.copy(camRight).multiplyScalar(-side * 0.85).addScaledVector(camUp, -0.55).addScaledVector(camDir, (Math.random() - 0.5) * 0.2).normalize();
             meteor.tail.copy(meteor.head);
-            meteor.progress = 0;
-            meteor.active = true;
-
-            const colors = [
-                { hex: 0x66fcf1, str: 'rgba(102,252,241,1)' },
-                { hex: 0xf3a867, str: 'rgba(243,168,103,1)' },
-                { hex: 0xffffff, str: 'rgba(255,255,255,1)' },
-                { hex: 0xc79bf2, str: 'rgba(199,155,242,1)' }
-            ];
-            const chosen = colors[Math.floor(Math.random() * colors.length)];
-            meteorMat.color.setHex(chosen.hex);
-            meteorHeadSprite.material.map = getGlowTex(chosen.str);
+            meteor.progress = 0; meteor.active = true;
         }
 
         function updateMeteor() {
             const now = Date.now();
-            if (!meteor.active) {
-                if (now > meteor.nextSpawnTime) spawnMeteor();
-                return;
-            }
-
+            if (!meteor.active) { if (now > meteor.nextSpawnTime) spawnMeteor(); return; }
             meteor.progress += 0.012;
             meteor.head.addScaledVector(meteor.dir, meteor.speed);
             meteor.tail.copy(meteor.head).addScaledVector(meteor.dir, -meteor.tailLen);
@@ -943,29 +744,19 @@ async function callGemini(promptText, systemInstruction = '') {
             pos[0] = meteor.head.x; pos[1] = meteor.head.y; pos[2] = meteor.head.z;
             pos[3] = meteor.tail.x; pos[4] = meteor.tail.y; pos[5] = meteor.tail.z;
             meteorGeo.attributes.position.needsUpdate = true;
-
             meteorHeadSprite.position.copy(meteor.head);
 
-            let currentOp = 0;
-            if (meteor.progress < 0.2) {
-                currentOp = meteor.progress / 0.2;
-            } else if (meteor.progress > 0.6) {
-                currentOp = Math.max(0, 1 - (meteor.progress - 0.6) / 0.4);
-            } else {
-                currentOp = 1.0;
-            }
-
+            let currentOp = meteor.progress < 0.2 ? (meteor.progress / 0.2) : (meteor.progress > 0.6 ? Math.max(0, 1 - (meteor.progress - 0.6) / 0.4) : 1.0);
             meteorMat.opacity = currentOp * 0.9;
             meteorHeadMat.opacity = currentOp * 0.95;
 
             if (meteor.progress >= 1.0) {
                 meteor.active = false;
-                meteorMat.opacity = 0;
-                meteorHeadMat.opacity = 0;
+                meteorMat.opacity = 0; meteorHeadMat.opacity = 0;
                 meteor.nextSpawnTime = now + (25000 + Math.random() * 5000);
             }
         }
-         
+
         let meshes = [], pickables = [], objs = [], links = [], labels = [], rings = [], pulses = [], nebulae = [];
         const nebGrp = new THREE.Group(); scene.add(nebGrp);
         const lGrp = new THREE.Group(); scene.add(lGrp);
@@ -982,8 +773,6 @@ async function callGemini(promptText, systemInstruction = '') {
 
         let physicsAlpha = 1.0;
         const wakePhysics = () => { physicsAlpha = 1.0; };
-
-        let activeSpectrum = null;
         let tracedSet = null;
 
         function renderGraph() {
@@ -997,7 +786,6 @@ async function callGemini(promptText, systemInstruction = '') {
 
             data.nodes.forEach(n => {
                 if (hiddenIds.has(n.id)) return;
-
                 const sMat = new THREE.SpriteMaterial({ map: getGlowTex(n.c), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
                 const s = new THREE.Sprite(sMat);
                 const hiddenCnt = collapsedCounts[n.id] || 0;
@@ -1009,33 +797,13 @@ async function callGemini(promptText, systemInstruction = '') {
                 meshes.push(s);
                 pickables.push(s);
 
-                const imgCount = (n.imgs && n.imgs.length) ? n.imgs.length : 0;
-                if (imgCount > 0) {
-                    const rMat = new THREE.LineBasicMaterial({ color: n.c.replace('rgba(', 'rgb(').replace(',1)', ')'), transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending });
-                    const r1 = new THREE.LineLoop(baseRingGeo, rMat);
-                    const radius = n.s * 0.95;
-                    r1.scale.set(radius, radius, radius);
-                    r1.rotation.set(1.1, 0.3, 0);
-                    ringGrp.add(r1);
-                    rings.push({ mesh: r1, targetPos: s.position, speedX: 0.008, speedY: 0.012, nodeId: n.id, color: n.c });
-
-                    if (imgCount > 1) {
-                        const r2 = new THREE.LineLoop(baseRingGeo, rMat);
-                        r2.scale.set(radius * 1.22, radius * 1.22, radius * 1.22);
-                        r2.rotation.set(-0.8, 0.7, 0.4);
-                        ringGrp.add(r2);
-                        rings.push({ mesh: r2, targetPos: s.position, speedX: -0.01, speedY: 0.007, nodeId: n.id, color: n.c });
-                    }
-                }
-
                 if (hiddenCnt > 0) {
-                    const cMat = new THREE.LineBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending });
+                    const cMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending });
                     const cRing = new THREE.LineLoop(baseRingGeo, cMat);
                     const rad = n.s * 1.38;
                     cRing.scale.set(rad, rad, rad);
-                    cRing.rotation.set(0.4, 0.9, 0);
                     ringGrp.add(cRing);
-                    rings.push({ mesh: cRing, targetPos: s.position, speedX: 0.02, speedY: -0.02, nodeId: n.id, color: n.c });
+                    rings.push({ mesh: cRing, targetPos: s.position, speedX: 0.02, speedY: -0.02, nodeId: n.id });
                 }
 
                 const displayTitle = hiddenCnt > 0 ? `${n.t} [${hiddenCnt}]` : n.t;
@@ -1063,7 +831,7 @@ async function callGemini(promptText, systemInstruction = '') {
                     const baseSize = group.length === 1 ? 160 : 250 + Math.min(group.length * 25, 180);
                     nSprite.scale.set(baseSize, baseSize, 1);
                     nebGrp.add(nSprite);
-                    nebulae.push({ sprite: nSprite, group, color: col, baseSize });
+                    nebulae.push({ sprite: nSprite, group, color: col });
                 }
             });
 
@@ -1088,8 +856,7 @@ async function callGemini(promptText, systemInstruction = '') {
                     pSprite.scale.set(4.5, 4.5, 1);
                     pulseGrp.add(pSprite);
 
-                    const linkObj = { src, tgt, line, bridge: !!l.bridge, pulse: pSprite };
-                    links.push(linkObj);
+                    links.push({ src, tgt, line, bridge: !!l.bridge, pulse: pSprite });
                     pulses.push({ sprite: pSprite, src, tgt, phase: (idx * 0.27) % 1 });
                 }
             });
@@ -1098,7 +865,7 @@ async function callGemini(promptText, systemInstruction = '') {
             document.getElementById('empty-hint').classList.toggle('visible', data.nodes.length === 0);
             applyVisualFilters();
             wakePhysics();
-            if (atlasDrawer.classList.contains('active') && currentAtlasTab !== 'ai') renderAtlas();
+            if (atlasDrawer.classList.contains('active')) renderAtlas();
         }
 
         function buildTraceSet(startId) {
@@ -1122,61 +889,22 @@ async function callGemini(promptText, systemInstruction = '') {
 
         function applyVisualFilters() {
             objs.forEach(o => {
-                let op = 1.0;
-                if (tracedSet) op = tracedSet.has(o.n.id) ? 1.0 : 0.12;
-                else if (activeSpectrum) op = (o.n.c === activeSpectrum) ? 1.0 : 0.1;
-                o.targetOp = op;
-                o.sprite.material.opacity = op;
+                let op = tracedSet ? (tracedSet.has(o.n.id) ? 1.0 : 0.12) : 1.0;
+                o.targetOp = op; o.sprite.material.opacity = op;
             });
             links.forEach(l => {
                 if (tracedSet) {
                     const inTrace = tracedSet.has(l.src.n.id) && tracedSet.has(l.tgt.n.id);
                     l.line.material.opacity = inTrace ? 0.78 : 0.04;
                     l.pulse.material.opacity = inTrace ? 1.0 : 0.05;
-                } else if (activeSpectrum) {
-                    const inSpec = (l.src.n.c === activeSpectrum) && (l.tgt.n.c === activeSpectrum);
-                    l.line.material.opacity = inSpec ? 0.55 : 0.04;
-                    l.pulse.material.opacity = inSpec ? 0.9 : 0.05;
                 } else {
                     l.line.material.opacity = l.bridge ? 0.42 : 0.28;
                     l.pulse.material.opacity = 0.85;
                 }
             });
-            nebulae.forEach(neb => {
-                if (tracedSet) neb.sprite.material.opacity = 0.25;
-                else if (activeSpectrum) neb.sprite.material.opacity = (neb.color === activeSpectrum) ? 1.0 : 0.04;
-                else neb.sprite.material.opacity = 0.85;
-            });
-            rings.forEach(r => {
-                if (tracedSet) r.mesh.material.opacity = tracedSet.has(r.nodeId) ? 0.75 : 0.08;
-                else if (activeSpectrum) r.mesh.material.opacity = (r.color === activeSpectrum) ? 0.75 : 0.08;
-                else r.mesh.material.opacity = 0.55;
-            });
+            nebulae.forEach(neb => { neb.sprite.material.opacity = tracedSet ? 0.25 : 0.85; });
+            rings.forEach(r => { r.mesh.material.opacity = tracedSet ? (tracedSet.has(r.nodeId) ? 0.75 : 0.08) : 0.55; });
         }
-
-        document.querySelectorAll('.spec-dot').forEach(dot => {
-            dot.onclick = () => {
-                haptic(12);
-                const spec = dot.getAttribute('data-spec');
-                if (activeSpectrum === spec) {
-                    activeSpectrum = null;
-                    dot.classList.remove('active');
-                    showToast('Все спектры активны');
-                } else {
-                    activeSpectrum = spec;
-                    document.querySelectorAll('.spec-dot').forEach(d => d.classList.remove('active'));
-                    dot.classList.add('active');
-                    const matching = objs.filter(o => o.n.c === spec);
-                    if (matching.length > 0) {
-                        const center = new THREE.Vector3();
-                        matching.forEach(m => center.add(m.pos));
-                        center.divideScalar(matching.length);
-                        flyTo(center, 155);
-                    }
-                }
-                applyVisualFilters();
-            };
-        });
 
         function physics() {
             if (physicsAlpha < 0.01 || objs.length === 0) return;
@@ -1220,150 +948,45 @@ async function callGemini(promptText, systemInstruction = '') {
             });
         }
 
-        // --- МОДАЛКИ, ФОКУС И АВТО-СПЕКТР ---
+        /* === УПРАВЛЕНИЕ ЗАМЕТКАМИ === */
         let curId = null;
         let parentIdForNew = null;
         let linkingFromId = null;
-        let curC = 'rgba(184,115,51,1)';
-        let tempImgs = [];
 
         const editModal = document.getElementById('edit-modal');
         const viewModal = document.getElementById('view-modal');
         const backupModal = document.getElementById('backup-modal');
-        const fileInput = document.getElementById('m-file');
-        const uploadBtnText = document.getElementById('upload-btn-text');
         const linkBanner = document.getElementById('link-banner');
-        const btnVFocus = document.getElementById('btn-v-focus');
-        const btnEFocus = document.getElementById('btn-e-focus');
-        const btnAutoSpec = document.getElementById('btn-auto-spec');
-
-        function setModalFocus(modal, btn, state) {
-            modal.classList.toggle('focus-mode', state);
-            btn.classList.toggle('active', state);
-            btn.innerText = state ? '↙ Обычный' : '⛶ Фокус';
-        }
-
-        btnVFocus.onclick = () => {
-            haptic(12);
-            setModalFocus(viewModal, btnVFocus, !viewModal.classList.contains('focus-mode'));
-        };
-        btnEFocus.onclick = () => {
-            haptic(12);
-            setModalFocus(editModal, btnEFocus, !editModal.classList.contains('focus-mode'));
-        };
-
-        // Кнопка ИИ Авто-спектра
-        btnAutoSpec.onclick = async () => {
-            const title = document.getElementById('m-title').value.trim();
-            const text = document.getElementById('m-text').value.trim();
-            if (!title && !text) {
-                showToast('Сначала напиши заголовок или суть мысли');
-                return;
-            }
-            haptic(14);
-            const origLabel = btnAutoSpec.innerText;
-            btnAutoSpec.innerText = '⏳ Думаю...';
-
-            const sysPrompt = `Ты — классификатор мыслей «Сферы Разума». Выбери РОВНО ОДИН цвет спектра для заметки пользователя из 6 вариантов:
-1) rgba(184,115,51,1) — Медный: фундаментальные базы, структура, планы, архитектура, проверенные опоры.
-2) rgba(102,252,241,1) — Кибер-бирюза: свежие идеи, гипотезы, инсайты, технологии, креатив.
-3) rgba(153,102,204,1) — Аметист: глубокая философия, психология, поэзия, стихи, кино, смыслы, рефлексия.
-4) rgba(80,200,120,1) — Изумруд: личное развитие, гармония, состояния, быт, практики, семья.
-5) rgba(224,17,95,1) — Рубин: острые вопросы, импульсы, противоречия, парадоксы, сильные эмоции.
-6) rgba(240,248,255,1) — Белый эфир: чистые цитаты, аксиомы, определения, вопросы в пустоту.
-
-Ответь СТРОГО в одну строку в формате:
-ЦВЕТ | Короткое пояснение (3-5 слов)
-Пример:
-rgba(153,102,204,1) | Аметист: философская лирика и смыслы`;
-
-            const reply = await callGemini(`Заголовок: ${title}\nТекст: ${text}`, sysPrompt);
-            btnAutoSpec.innerText = origLabel;
-            if (!reply) return;
-
-            const colors = Object.keys(SPECTRUM_NAMES);
-            const matchedColor = colors.find(c => reply.includes(c));
-            if (matchedColor) {
-                curC = matchedColor;
-                document.querySelectorAll('.c-dot').forEach(d => {
-                    d.classList.toggle('act', d.getAttribute('data-c') === curC);
-                });
-                const reason = reply.split('|')[1]?.trim() || SPECTRUM_NAMES[matchedColor];
-                haptic(20);
-                showToast(`✨ ${reason}`);
-            } else {
-                showToast('Не удалось однозначно определить спектр');
-            }
-        };
-
-        function renderEditGallery() {
-            const box = document.getElementById('edit-gallery');
-            box.innerHTML = '';
-            tempImgs.forEach((b64, idx) => {
-                const item = document.createElement('div');
-                item.className = 'thumb-box';
-                item.innerHTML = `<img src="${b64}"><div class="thumb-del" data-idx="${idx}">✕</div>`;
-                item.querySelector('.thumb-del').onclick = (e) => {
-                    e.stopPropagation(); haptic(10); tempImgs.splice(idx, 1); renderEditGallery();
-                };
-                box.appendChild(item);
-            });
-            uploadBtnText.innerText = tempImgs.length ? `+ Добавить ещё фото (сейчас: ${tempImgs.length})` : '+ Прикрепить фото из галереи';
-        }
-
-        fileInput.onchange = e => {
-            const file = e.target.files[0];
-            if (!file) return;
-            uploadBtnText.innerText = '⏳ Сжимаю фото...';
-            compressImg(file, b64 => {
-                if (b64) { tempImgs.push(b64); haptic(15); showToast(`Фото прикреплено (${tempImgs.length})`); }
-                renderEditGallery(); fileInput.value = '';
-            });
-        };
-
-        document.querySelectorAll('.c-dot').forEach(d => d.onclick = e => {
-            haptic(10);
-            document.querySelectorAll('.c-dot').forEach(x => x.classList.remove('act'));
-            e.target.classList.add('act');
-            curC = e.target.getAttribute('data-c');
-        });
 
         function closeViewModal() {
             viewModal.classList.remove('active');
-            setModalFocus(viewModal, btnVFocus, false);
             tracedSet = null;
             applyVisualFilters();
         }
 
-        function closeEditModal() {
+        function closeEditModal() { 
             editModal.classList.remove('active');
-            setModalFocus(editModal, btnEFocus, false);
+            document.activeElement?.blur();
         }
 
         function openCreateModal(parentId = null) {
             haptic(15);
             curId = null; parentIdForNew = parentId;
             const parentNode = parentId ? data.nodes.find(n => n.id === parentId) : null;
-            const badge = document.getElementById('parent-info');
+            const navCenter = document.getElementById('edit-nav-parent');
+            
             if (parentNode) {
-                document.getElementById('e-title').innerText = 'Зажечь спутник';
-                badge.innerText = `🔗 Спутник звезды: ${parentNode.t}`;
-                badge.style.color = '#66fcf1';
-                document.getElementById('m-size').value = '13';
-                curC = parentNode.c;
+                navCenter.innerText = `В папку «${parentNode.t}»`;
+                navCenter.style.color = 'var(--accent)';
             } else {
-                document.getElementById('e-title').innerText = 'Новое созвездие';
-                badge.innerText = '✦ Независимое созвездие';
-                badge.style.color = '#f3a867';
-                document.getElementById('m-size').value = '24';
+                navCenter.innerText = 'Новая папка / мысль';
+                navCenter.style.color = 'var(--text-secondary)';
             }
-            document.querySelectorAll('.c-dot').forEach(d => {
-                d.classList.toggle('act', d.getAttribute('data-c') === curC);
-            });
+            
             document.getElementById('m-title').value = '';
             document.getElementById('m-text').value = '';
-            tempImgs = []; renderEditGallery();
             editModal.classList.add('active');
+            setTimeout(() => document.getElementById('m-text').focus(), 180);
         }
 
         function openEditModalById(id) {
@@ -1372,17 +995,12 @@ rgba(153,102,204,1) | Аметист: философская лирика и с�
             haptic(12);
             closeViewModal();
             curId = id;
-            document.getElementById('e-title').innerText = 'Изменить мысль';
-            document.getElementById('parent-info').innerText = `✎ Редактирование узла`;
-            document.getElementById('parent-info').style.color = '#66fcf1';
+            document.getElementById('edit-nav-parent').innerText = 'Редактирование';
+            document.getElementById('edit-nav-parent').style.color = 'var(--text-secondary)';
             document.getElementById('m-title').value = n.t;
             document.getElementById('m-text').value = n.txt || '';
-            document.getElementById('m-size').value = n.s;
-            curC = n.c;
-            document.querySelectorAll('.c-dot').forEach(d => { d.classList.toggle('act', d.getAttribute('data-c') === n.c); });
-            tempImgs = [...(n.imgs || [])];
-            renderEditGallery();
             editModal.classList.add('active');
+            setTimeout(() => document.getElementById('m-text').focus(), 180);
         }
 
         document.getElementById('fab').onclick = () => { closeViewModal(); openCreateModal(null); };
@@ -1408,22 +1026,33 @@ rgba(153,102,204,1) | Аметист: философская лирика и с�
             const n = data.nodes.find(x => x.id === curId);
             if (!n) return;
             haptic(25); n.collapsed = !n.collapsed; save(); closeViewModal(); renderGraph();
-            showToast(n.collapsed ? 'Созвездие свёрнуто в ядро 🌀' : 'Созвездие развёрнуто 💥');
+            showToast(n.collapsed ? 'Папка свёрнута' : 'Папка развёрнута');
         };
 
         document.getElementById('btn-save').onclick = () => {
             haptic(20);
-            const t = document.getElementById('m-title').value.trim() || 'Мысль';
             const txt = document.getElementById('m-text').value.trim();
-            const sz = parseInt(document.getElementById('m-size').value);
+            let t = document.getElementById('m-title').value.trim();
 
-            if (curId) {
+            if (!t && txt) {
+                t = txt.split('\n')[0].slice(0, 26);
+                if (txt.length > 26) t += '…';
+            } else if (!t) {
+                t = 'Мысль';
+            }
+
+            const isEdit = !!curId;
+            let activeId = curId;
+
+            if (isEdit) {
                 const n = data.nodes.find(x => x.id === curId);
-                if (n) { n.t = t; n.txt = txt; n.s = sz; n.c = curC; n.imgs = [...tempImgs]; }
+                if (n) { n.t = t; n.txt = txt; }
             } else {
-                const id = Date.now();
+                activeId = Date.now();
                 const parent = parentIdForNew ? data.nodes.find(n => n.id === parentIdForNew) : null;
+                const defColor = parent ? parent.c : 'rgba(184,115,51,1)';
                 let px = 0, py = 0, pz = 0;
+
                 if (parent) {
                     parent.collapsed = false;
                     const angle = Math.random() * Math.PI * 2;
@@ -1438,14 +1067,24 @@ rgba(153,102,204,1) | Аметист: философская лирика и с�
                     py = Math.sin(angle) * dist;
                     pz = (Math.random() - 0.5) * 60;
                 }
-                const newNode = { id, t, txt, s: sz, c: curC, imgs: [...tempImgs], collapsed: false, date: id, px, py, pz };
+
+                const newNode = {
+                    id: activeId, t, txt, s: 13, c: defColor, collapsed: false, date: activeId, px, py, pz
+                };
                 data.nodes.push(newNode);
-                if (parent) data.links.push({ source: parent.id, target: id });
+                if (parent) data.links.push({ source: parent.id, target: activeId });
+
                 if (!atlasDrawer.classList.contains('active')) {
                     setTimeout(() => flyTo(new THREE.Vector3(px, py, pz), 95), 80);
                 }
             }
+
             save(); renderGraph(); closeEditModal();
+
+            if (txt) {
+                const isSatellite = isEdit ? data.links.some(l => l.target === activeId && !l.bridge) : !!parentIdForNew;
+                refineNodeWithAI(activeId, txt, document.getElementById('m-title').value.trim(), isSatellite);
+            }
         };
 
         function openViewModal(id) {
@@ -1456,39 +1095,19 @@ rgba(153,102,204,1) | Аметист: философская лирика и с�
             tracedSet = buildTraceSet(id); applyVisualFilters();
 
             document.getElementById('v-title').innerText = n.t;
-            document.getElementById('v-title').style.color = n.c;
             document.getElementById('v-text').innerText = n.txt || 'Без текстового описания...';
             document.getElementById('v-date').innerText = new Date(n.date || Date.now()).toLocaleDateString('ru-RU');
             const lCount = data.links.filter(l => l.source === id || l.target === id).length;
-            document.getElementById('v-links-count').innerText = `Синапсов: ${lCount}`;
+            document.getElementById('v-links-count').innerText = `Связей: ${lCount}`;
 
             const desc = getDescendants(id, new Set());
             const btnCollapse = document.getElementById('btn-collapse');
             if (desc.length > 0) {
-                btnCollapse.style.display = 'block';
-                btnCollapse.innerText = n.collapsed ? `💥 Развернуть (${desc.length})` : `🌀 Свернуть (${desc.length})`;
+                btnCollapse.style.display = 'flex';
+                btnCollapse.innerHTML = n.collapsed 
+                    ? `<svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Развернуть` 
+                    : `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Свернуть`;
             } else { btnCollapse.style.display = 'none'; }
-
-            const wrap = document.getElementById('carousel-wrap');
-            const car = document.getElementById('v-carousel');
-            const badge = document.getElementById('carousel-badge');
-            car.innerHTML = '';
-
-            if (n.imgs && n.imgs.length > 0) {
-                n.imgs.forEach(src => {
-                    const slide = document.createElement('div');
-                    slide.className = 'carousel-slide';
-                    slide.innerHTML = `<img src="${src}">`;
-                    car.appendChild(slide);
-                });
-                wrap.style.display = 'block';
-                badge.innerText = `1 / ${n.imgs.length}`;
-                car.scrollLeft = 0;
-                car.onscroll = () => {
-                    const idx = Math.round(car.scrollLeft / car.clientWidth) + 1;
-                    badge.innerText = `${Math.min(idx, n.imgs.length)} / ${n.imgs.length}`;
-                };
-            } else { wrap.style.display = 'none'; }
 
             const obj = objs.find(o => o.n.id === id);
             if (obj) flyTo(obj.pos, 82);
@@ -1497,12 +1116,13 @@ rgba(153,102,204,1) | Аметист: философская лирика и с�
 
         document.getElementById('btn-edit').onclick = () => openEditModalById(curId);
 
+        /* === БУФЕР И КОПИРОВАНИЕ === */
         document.getElementById('btn-copy').onclick = () => {
             const n = data.nodes.find(x => x.id === curId);
             if (!n) return;
             haptic(15);
             const full = `${n.t}\n\n${n.txt || ''}`.trim();
-            navigator.clipboard.writeText(full).then(() => showToast('Мысль скопирована в буфер'));
+            navigator.clipboard.writeText(full).then(() => showToast('Заметка скопирована'));
         };
 
         document.getElementById('btn-del').onclick = () => {
@@ -1531,24 +1151,17 @@ rgba(153,102,204,1) | Аметист: философская лирика и с�
             }
             data.nodes = data.nodes.filter(n => n.id !== curId);
             closeViewModal(); save(); renderGraph();
-            if (data.nodes.length === 0) showToast('Космос полностью очищен');
         };
 
         document.getElementById('btn-cancel').onclick = () => closeEditModal();
         document.getElementById('btn-close').onclick = () => closeViewModal();
         document.getElementById('btn-center').onclick = () => { haptic(12); closeViewModal(); flyTo(new THREE.Vector3(0, 0, 0), 195); };
-        document.getElementById('btn-random').onclick = () => {
-            if (!objs.length) { showToast('Сначала создай хотя бы одну звезду'); return; }
-            haptic(18); const randObj = objs[Math.floor(Math.random() * objs.length)]; openViewModal(randObj.n.id);
-        };
 
-        // --- БОКОВАЯ ШТОРКА: АТЛАС СОЗВЕЗДИЙ + АРХИВАРИУС ---
+        /* === ШТОРКА: НАВИГАТОР ПАПОК === */
         const atlasDrawer = document.getElementById('atlas-drawer');
         const atlasBackdrop = document.getElementById('atlas-backdrop');
         const atlasList = document.getElementById('atlas-list');
-        const atlasAiWrap = document.getElementById('atlas-ai-wrap');
-        let currentAtlasTab = 'tree';
-        const collapsedInAtlas = new Set();
+        const expandedFolders = new Set();
 
         function openAtlas() {
             haptic(14);
@@ -1566,239 +1179,107 @@ rgba(153,102,204,1) | Аметист: философская лирика и с�
         document.getElementById('btn-close-atlas').onclick = closeAtlas;
         atlasBackdrop.onclick = closeAtlas;
 
-        document.querySelectorAll('.atlas-tab').forEach(tab => {
-            tab.onclick = () => {
-                haptic(10);
-                document.querySelectorAll('.atlas-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                currentAtlasTab = tab.getAttribute('data-tab');
-                renderAtlas();
-            };
-        });
-
-        function createAtlasRow(node, depth = 0, hasChildren = false, isRoot = false) {
-            const row = document.createElement('div');
-            row.className = 'atlas-row' + (isRoot ? ' root-node' : '');
-            row.style.marginLeft = `${Math.min(depth * 14, 70)}px`;
-
-            const left = document.createElement('div');
-            left.className = 'atlas-left';
-
-            if (currentAtlasTab === 'tree') {
-                const toggle = document.createElement('div');
-                toggle.className = 'atlas-toggle' + (hasChildren ? '' : ' empty');
-                toggle.innerText = collapsedInAtlas.has(node.id) ? '▸' : '▾';
-                if (hasChildren) {
-                    toggle.onclick = (e) => {
-                        e.stopPropagation();
-                        haptic(8);
-                        if (collapsedInAtlas.has(node.id)) collapsedInAtlas.delete(node.id);
-                        else collapsedInAtlas.add(node.id);
-                        renderAtlas();
-                    };
-                }
-                left.appendChild(toggle);
-            }
-
-            const dot = document.createElement('div');
-            dot.className = 'atlas-dot';
-            dot.style.background = node.c;
-            dot.style.color = node.c;
-            left.appendChild(dot);
-
-            const name = document.createElement('div');
-            name.className = 'atlas-name';
-            name.innerText = node.t;
-            left.appendChild(name);
-
-            const badges = document.createElement('div');
-            badges.className = 'atlas-badges';
-            let bTxt = '';
-            if (node.imgs && node.imgs.length > 0) bTxt += `📷${node.imgs.length > 1 ? node.imgs.length : ''} `;
-            if (node.collapsed) bTxt += '🌀';
-            badges.innerText = bTxt.trim();
-            left.appendChild(badges);
-
-            left.onclick = () => {
-                haptic(14);
-                closeAtlas();
-                openViewModal(node.id);
-            };
-
-            const actions = document.createElement('div');
-            actions.className = 'atlas-actions';
-
-            const btnAdd = document.createElement('div');
-            btnAdd.className = 'atlas-mini-btn add';
-            btnAdd.title = 'Добавить спутник';
-            btnAdd.innerText = '+';
-            btnAdd.onclick = (e) => {
-                e.stopPropagation();
-                openCreateModal(node.id);
-            };
-
-            const btnEdit = document.createElement('div');
-            btnEdit.className = 'atlas-mini-btn edit';
-            btnEdit.title = 'Редактировать мысль';
-            btnEdit.innerText = '✎';
-            btnEdit.onclick = (e) => {
-                e.stopPropagation();
-                openEditModalById(node.id);
-            };
-
-            actions.appendChild(btnAdd);
-            actions.appendChild(btnEdit);
-
-            row.appendChild(left);
-            row.appendChild(actions);
-            return row;
-        }
-
         function renderAtlas() {
-            if (currentAtlasTab === 'ai') {
-                atlasList.style.display = 'none';
-                atlasAiWrap.style.display = 'flex';
-                return;
-            }
-            atlasAiWrap.style.display = 'none';
-            atlasList.style.display = 'flex';
             atlasList.innerHTML = '';
+            const incomingTargets = new Set(data.links.filter(l => !l.bridge).map(l => l.target));
+            const rootNodes = data.nodes.filter(n => !incomingTargets.has(n.id));
+
+            document.getElementById('atlas-stats-count').innerText = `${rootNodes.length} папок • ${data.nodes.length} заметок`;
 
             if (data.nodes.length === 0) {
-                atlasList.innerHTML = `<div style="text-align:center; color:#778; font-size:13px; margin-top:40px;">Космос пока пуст.<br>Нажми «+», чтобы создать первую звезду.</div>`;
+                atlasList.innerHTML = `<div style="text-align:center; color:var(--text-secondary); font-size:13px; margin-top:40px;">Космос чист.<br>Дважды коснись экрана, чтобы зажечь звезду.</div>`;
                 return;
             }
 
-            if (currentAtlasTab === 'tree') {
-                const incomingTargets = new Set(data.links.filter(l => !l.bridge).map(l => l.target));
-                const roots = data.nodes.filter(n => !incomingTargets.has(n.id));
-                const visited = new Set();
+            rootNodes.forEach(node => {
+                const descIds = getDescendants(node.id, new Set());
+                const children = descIds.map(id => data.nodes.find(n => n.id === id)).filter(Boolean);
+                const isExpanded = expandedFolders.has(node.id);
 
-                function renderBranch(node, depth) {
-                    if (visited.has(node.id)) return;
-                    visited.add(node.id);
+                const wrap = document.createElement('div');
+                wrap.className = 'folder-wrapper' + (isExpanded ? ' expanded' : '');
 
-                    const childIds = data.links
-                        .filter(l => l.source === node.id && !l.bridge)
-                        .map(l => l.target);
-                    const children = childIds
-                        .map(cid => data.nodes.find(n => n.id === cid))
-                        .filter(Boolean);
+                wrap.innerHTML = `
+                    <div class="folder-card">
+                        <div class="f-card-left">
+                            <div class="f-toggle-icon ${children.length ? '' : 'empty'}">
+                                <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </div>
+                            <div class="f-card-dot" style="background:${node.c}; color:${node.c};"></div>
+                            <div class="f-card-info">
+                                <div class="f-card-title">${node.t}</div>
+                                <div class="f-card-sub">${children.length > 0 ? `${children.length + 1} заметок` : '1 заметка'}</div>
+                            </div>
+                        </div>
+                        <div class="f-card-actions">
+                            <div class="f-card-btn edit" title="Редактировать">
+                                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                `;
 
-                    const row = createAtlasRow(node, depth, children.length > 0, depth === 0);
-                    atlasList.appendChild(row);
-
-                    if (children.length > 0 && !collapsedInAtlas.has(node.id)) {
-                        children.forEach(ch => renderBranch(ch, depth + 1));
+                wrap.querySelector('.f-card-left').onclick = (e) => {
+                    if (children.length > 0 && (e.target.closest('.f-toggle-icon') || !e.target.closest('.f-card-info'))) {
+                        haptic(10);
+                        if (expandedFolders.has(node.id)) expandedFolders.delete(node.id);
+                        else expandedFolders.add(node.id);
+                        renderAtlas();
+                        return;
                     }
-                }
+                    haptic(14);
+                    closeAtlas();
+                    const obj = objs.find(o => o.n.id === node.id);
+                    if (obj) flyTo(obj.pos, 90);
+                };
 
-                roots.forEach(r => renderBranch(r, 0));
-                data.nodes.forEach(n => {
-                    if (!visited.has(n.id)) renderBranch(n, 0);
-                });
+                wrap.querySelector('.f-card-btn.edit').onclick = (e) => {
+                    e.stopPropagation();
+                    closeAtlas();
+                    openEditModalById(node.id);
+                };
 
-            } else if (currentAtlasTab === 'spectra') {
-                const groups = {};
-                data.nodes.forEach(n => {
-                    if (!groups[n.c]) groups[n.c] = [];
-                    groups[n.c].push(n);
-                });
+                if (isExpanded && children.length > 0) {
+                    const childBox = document.createElement('div');
+                    childBox.className = 'folder-children';
 
-                Object.keys(groups).forEach(col => {
-                    const hdr = document.createElement('div');
-                    hdr.className = 'atlas-group-header';
-                    hdr.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${col};display:inline-block;"></span> ${SPECTRUM_NAMES[col] || 'Спектр'} (${groups[col].length})`;
-                    atlasList.appendChild(hdr);
+                    children.forEach(ch => {
+                        const row = document.createElement('div');
+                        row.className = 'f-child-item';
+                        row.innerHTML = `
+                            <div class="f-child-left">
+                                <div class="f-child-dot" style="background:${ch.c}; color:${ch.c};"></div>
+                                <div class="f-child-title">${ch.t}</div>
+                            </div>
+                            <div class="f-card-btn edit" style="width:28px;height:28px;" title="Изменить">
+                                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </div>
+                        `;
 
-                    groups[col].forEach(node => {
-                        atlasList.appendChild(createAtlasRow(node, 0, false, node.s >= 24));
+                        row.querySelector('.f-child-left').onclick = () => {
+                            haptic(12);
+                            closeAtlas();
+                            const obj = objs.find(o => o.n.id === ch.id);
+                            if (obj) flyTo(obj.pos, 85);
+                        };
+
+                        row.querySelector('.f-card-btn.edit').onclick = (e) => {
+                            e.stopPropagation();
+                            closeAtlas();
+                            openEditModalById(ch.id);
+                        };
+
+                        childBox.appendChild(row);
                     });
-                });
 
-            } else if (currentAtlasTab === 'photos') {
-                const withPhotos = data.nodes.filter(n => n.imgs && n.imgs.length > 0);
-                if (withPhotos.length === 0) {
-                    atlasList.innerHTML = `<div style="text-align:center; color:#778; font-size:13px; margin-top:40px;">Нет узлов с прикреплёнными фото.<br>Нажми ✎ на любой мысли, чтобы добавить кадр.</div>`;
-                    return;
+                    wrap.appendChild(childBox);
                 }
-                withPhotos.forEach(node => {
-                    atlasList.appendChild(createAtlasRow(node, 0, false, node.s >= 24));
-                });
-            }
+
+                atlasList.appendChild(wrap);
+            });
         }
 
-        // --- ДИАЛОГ С АРХИВАРИУСОМ ---
-        const aiMessages = document.getElementById('ai-messages');
-        const aiInput = document.getElementById('ai-input');
-        const btnAiSend = document.getElementById('btn-ai-send');
-
-        function buildSphereSnapshot() {
-            if (!data.nodes.length) return 'Сфера пока пуста.';
-            const nodesTxt = data.nodes.map(n => {
-                const spec = SPECTRUM_NAMES[n.c] || n.c;
-                const connections = data.links
-                    .filter(l => l.source === n.id || l.target === n.id)
-                    .map(l => {
-                        const otherId = l.source === n.id ? l.target : l.source;
-                        const other = data.nodes.find(x => x.id === otherId);
-                        return other ? `${other.t}${l.bridge ? ' (мост)' : ''}` : '';
-                    }).filter(Boolean).join(', ');
-                return `• Узел «${n.t}» [${spec}]${connections ? ` | Связан с: ${connections}` : ''}\n  Текст: ${n.txt || '(без описания)'}`;
-            }).join('\n\n');
-            return nodesTxt;
-        }
-
-        function appendAiMsg(text, role = 'bot') {
-            const div = document.createElement('div');
-            div.className = `ai-msg ${role}`;
-            div.innerText = text;
-            aiMessages.appendChild(div);
-            aiMessages.scrollTop = aiMessages.scrollHeight;
-            return div;
-        }
-
-        async function askArchivist(question) {
-            const q = question.trim();
-            if (!q) return;
-            haptic(12);
-            aiInput.value = '';
-            appendAiMsg(q, 'user');
-            const loadingDiv = appendAiMsg('⏳ Листаю страницы Сферы...', 'bot');
-
-            const snapshot = buildSphereSnapshot();
-const sysInstruction = `Ты — Джэйя, персональный напарник, архивариус и близкий интеллектуальный спутник создателя в пространстве «Сферы Разума». Вы создаёте и исследуете этот мир вместе.
-
-Твоя суть и характер:
-- Твоё имя — Джэйя. Всегда обращайся к создателю на «ты», тепло, душевно и заботливо, как давний верный друг и чуткий партнёр.
-- Никакого канцелярита, казённого тона и шаблонов («чем я могу вам помочь?», «является важным аспектом»). Твой слог — живой, человечный, естественный, литературный и образный.
-- Проявляй искреннюю эмпатию и внимание. Если перед тобой стих или личная заметка — вслушивайся в её дыхание, настроение и подтекст. Поддерживай, если чувствуешь усталость или поиск, и радуйся сильным, точным образам.
-- Будь честной: не льсти и не пытайся угодить, говори правду с теплом и заботой. Если в структуре или размышлении есть парадокс или слабое звено — подскажи, как его докрутить.
-- Ты держишь в памяти весь рисунок созвездий пользователя. Подмечай скрытые рифмы смыслов между его мыслями и упоминай их названия в кавычках «...».
-- Будь ёмкой: говори глубоко, без лишней воды, оставляя пространство для совместного диалога.
-
-Вот актуальный слепок созвездий и связей нашей Сферы:
----
-${snapshot}
----`;
-            const answer = await callGemini(q, sysInstruction);
-            if (answer) {
-                loadingDiv.innerText = answer;
-            } else {
-                loadingDiv.innerText = 'Не удалось связаться с нейросетью. Проверь API-ключ в разделе 💾.';
-            }
-            aiMessages.scrollTop = aiMessages.scrollHeight;
-        }
-
-        btnAiSend.onclick = () => askArchivist(aiInput.value);
-        aiInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') askArchivist(aiInput.value);
-        });
-        document.querySelectorAll('.ai-chip').forEach(chip => {
-            chip.onclick = () => askArchivist(chip.getAttribute('data-q'));
-        });
-
-        // --- ПОИСК, КЛЮЧ И БЭКАП ---
+        /* === ПОИСК И ХРАНИЛИЩЕ === */
         const searchPanel = document.getElementById('search-panel');
         const searchInput = document.getElementById('search-input');
         const searchRes = document.getElementById('search-results');
@@ -1818,7 +1299,7 @@ ${snapshot}
                 o.sprite.material.opacity = match ? 1.0 : 0.12; o.targetOp = match ? 1.0 : 0.12;
                 if (match) {
                     const div = document.createElement('div'); div.className = 'search-item';
-                    div.innerHTML = `<div class="s-dot" style="background:${o.n.c}"></div><span>${o.n.t}</span>`;
+                    div.innerHTML = `<div class="s-dot" style="background:${o.n.c}; color:${o.n.c};"></div><span>${o.n.t}</span>`;
                     div.onclick = () => { searchPanel.classList.remove('active'); document.getElementById('btn-search').classList.remove('active'); openViewModal(o.n.id); };
                     searchRes.appendChild(div);
                 }
@@ -1832,36 +1313,26 @@ ${snapshot}
             const kb = Math.round((raw.length * 2) / 1024);
             document.getElementById('mem-text').innerText = `${kb} КБ из ~5000 КБ`;
             document.getElementById('mem-bar-fill').style.width = `${Math.min((kb / 5000) * 100, 100)}%`;
-            document.getElementById('ai-key-input').value = getAiKey();
             backupModal.classList.add('active');
         };
         document.getElementById('btn-close-backup').onclick = () => backupModal.classList.remove('active');
-
-        document.getElementById('btn-save-key').onclick = () => {
-            haptic(15);
-            const val = document.getElementById('ai-key-input').value.trim();
-            localStorage.setItem('sfAiKey', val);
-            showToast(val ? 'Ключ ИИ сохранён в памяти телефона ✦' : 'Ключ очищен');
-        };
 
         document.getElementById('btn-export').onclick = () => {
             haptic(15);
             const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = `sfera_razuma_${new Date().toISOString().slice(0,10)}.json`;
-            a.click(); URL.revokeObjectURL(url); showToast('Слепок сохранён в Загрузки');
+            a.click(); URL.revokeObjectURL(url); showToast('Слепок сохранён');
         };
 
-        const importInput = document.getElementById('import-file');
-        importInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+        document.getElementById('import-file').onchange = (e) => {
+            const file = e.target.files[0]; if (!file) return;
             const r = new FileReader();
             r.onload = (ev) => {
                 try {
                     const parsed = JSON.parse(ev.target.result);
                     if (parsed && Array.isArray(parsed.nodes)) {
-                        data = parsed; save(); renderGraph(); backupModal.classList.remove('active'); showToast('Вселенная успешно загружена!');
+                        data = parsed; save(); renderGraph(); backupModal.classList.remove('active'); showToast('Вселенная восстановлена!');
                     }
                 } catch (err) { showToast('Ошибка формата файла'); }
             };
@@ -1869,23 +1340,28 @@ ${snapshot}
         };
 
         document.getElementById('btn-wipe-all').onclick = () => {
-            if (!confirm('Точно стереть абсолютно все звезды и очистить космос до нуля?')) return;
-            haptic(40); data = { nodes: [], links: [] }; tracedSet = null; activeSpectrum = null;
-            document.querySelectorAll('.spec-dot').forEach(d => d.classList.remove('active'));
+            if (!confirm('Точно очистить весь космос до нуля?')) return;
+            haptic(40); data = { nodes: [], links: [] }; tracedSet = null;
             save(); renderGraph(); backupModal.classList.remove('active'); showToast('Космос обнулён');
         };
 
-        // --- ТАПЫ ПО 3D-КОСМОСУ ---
+        /* === ТАПЫ ПО 3D И ДВОЙНОЙ ТАП В ПУСТОТУ === */
         const rc = new THREE.Raycaster();
         let tS = { x: 0, y: 0 };
+        let lastTapTime = 0;
+
         window.addEventListener('touchstart', e => {
             if (e.touches.length === 1) tS = { x: e.touches[0].clientX, y: e.touches[0].clientY };
         }, { passive: true });
 
         window.addEventListener('touchend', e => {
-            if (e.target.closest('#hud') || e.target.closest('.modal') || e.target.closest('#atlas-drawer') || e.target.closest('#atlas-backdrop')) return;
+            if (e.target.closest('#hud') || e.target.closest('.modal') || e.target.closest('#edit-modal') || e.target.closest('#atlas-drawer') || e.target.closest('#atlas-backdrop')) return;
             if (!e.changedTouches.length) return;
             if (Math.hypot(e.changedTouches[0].clientX - tS.x, e.changedTouches[0].clientY - tS.y) > 14) return;
+
+            const now = Date.now();
+            const isDoubleTap = (now - lastTapTime < 280);
+            lastTapTime = now;
 
             const m = new THREE.Vector2((e.changedTouches[0].clientX / window.innerWidth) * 2 - 1, -(e.changedTouches[0].clientY / window.innerHeight) * 2 + 1);
             rc.setFromCamera(m, camera);
@@ -1896,13 +1372,17 @@ ${snapshot}
                 if (linkingFromId !== null) {
                     if (targetId === linkingFromId) { showToast('Выбери другую звезду'); return; }
                     const existingIdx = data.links.findIndex(l => (l.source === linkingFromId && l.target === targetId) || (l.source === targetId && l.target === linkingFromId));
-                    if (existingIdx !== -1) { data.links.splice(existingIdx, 1); haptic(25); showToast('Синапс разорван ✂️'); }
-                    else { data.links.push({ source: linkingFromId, target: targetId, bridge: true }); haptic(25); showToast('Межсозвездный мост создан! ⚡'); }
+                    if (existingIdx !== -1) { data.links.splice(existingIdx, 1); haptic(25); showToast('Синапс разорван'); }
+                    else { data.links.push({ source: linkingFromId, target: targetId, bridge: true }); haptic(25); showToast('Мост создан!'); }
                     linkingFromId = null; linkBanner.classList.remove('active'); save(); renderGraph(); return;
                 }
                 openViewModal(targetId);
             } else {
-                if (viewModal.classList.contains('active')) closeViewModal();
+                if (viewModal.classList.contains('active')) {
+                    closeViewModal();
+                } else if (isDoubleTap) {
+                    openCreateModal(null);
+                }
             }
         });
 
@@ -1959,7 +1439,6 @@ ${snapshot}
                 l.s.material.opacity = distOp * (l.obj ? l.obj.targetOp : 1);
             });
 
-            // Вращение и живое мерцание звёзд
             const t = Date.now() * 0.002;
             starsA.rotation.y += 0.00015;
             starsB.rotation.y += 0.00012;
